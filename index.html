@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolia - Modern Student Portfolio Builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Authentication Screen Mockup -->
+    <div id="authScreen" class="auth-overlay">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" rx="8" fill="url(#logoGrad)" />
+                    <path d="M10 22V10L16 16L22 10V22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#3b82f6" />
+                            <stop offset="1" stop-color="#8b5cf6" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span>Portfolia</span>
+            </div>
+            <h1>Create your story.</h1>
+            <p>Build, style, and export a beautiful, responsive portfolio website directly to your local computer.</p>
+            
+            <button id="googleLoginBtn" class="btn google-login" onclick="triggerGoogleLogin()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                <span>Continue with Google</span>
+            </button>
+
+            <!-- Login Animation Elements -->
+            <div id="authLoading" class="auth-loading hidden">
+                <div class="spinner"></div>
+                <p id="authStatusText">Connecting to Google Accounts...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Dashboard Shell (Hidden initially) -->
+    <div id="appWorkspace" class="workspace-container hidden">
+        
+        <!-- Header -->
+        <header class="workspace-header">
+            <div class="logo-area">
+                <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="32" height="32" rx="8" fill="url(#headerGrad)" />
+                    <path d="M10 22V10L16 16L22 10V22" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <defs>
+                        <linearGradient id="headerGrad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#3b82f6" />
+                            <stop offset="1" stop-color="#8b5cf6" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="logo-text">Portfolia</span>
+                <span class="badge">V2.0</span>
+            </div>
+
+            <!-- Header controls -->
+            <div class="header-actions">
+                <button class="btn btn-secondary btn-icon" onclick="triggerImportJson()">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    Import JSON
+                </button>
+                <input type="file" id="importJsonInput" accept=".json" style="display: none;" onchange="handleImportJson(event)">
+                
+                <button class="btn btn-primary btn-icon" onclick="exportToLocalFolder()">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l2.414-2.414a1 1 0 01.707-.293H20"/></svg>
+                    Export Portfolio
+                </button>
+                <div class="user-profile-mock">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" alt="Jane Doe" id="avatarImage">
+                    <div class="user-info">
+                        <span class="user-name" id="userNameHeader">Jane Doe</span>
+                        <span class="user-role">Student Creator</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Body -->
+        <main class="workspace-main">
+            
+            <!-- Left Side: Editor Form -->
+            <aside class="editor-sidebar">
+                <div class="sidebar-tabs">
+                    <button class="tab-btn active" data-tab="content">Content</button>
+                    <button class="tab-btn" data-tab="style">Theme & Customization</button>
+                </div>
+
+                <div class="sidebar-scrollable-content">
+                    
+                    <!-- Content Tab Panel -->
+                    <div id="tabContent" class="tab-panel active">
+                        
+                        <!-- Accordion: Profile / Hero Details -->
+                        <div class="accordion-item active">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <h3>1. Hero Info & Contact</h3>
+                                <svg class="arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="form-group">
+                                    <label for="pName">Full Name</label>
+                                    <input type="text" id="pName" placeholder="e.g., Jane Doe" value="Jane Doe" oninput="updateLivePreview()">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pTitle">Tagline / Major</label>
+                                    <input type="text" id="pTitle" placeholder="e.g., Computer Science Student & Frontend Developer" value="Computer Science Student" oninput="updateLivePreview()">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pBio">About / Summary</label>
+                                    <textarea id="pBio" rows="3" placeholder="Write a short elevator pitch about yourself..." oninput="updateLivePreview()">I am a junior computer science student passionate about building interfaces that are beautiful, interactive, and user-centric.</textarea>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="pEmail">Email Address</label>
+                                        <input type="text" id="pEmail" placeholder="jane.doe@university.edu" value="jane.doe@u.edu" oninput="updateLivePreview()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pLocation">Location</label>
+                                        <input type="text" id="pLocation" placeholder="e.g., Boston, MA" value="San Francisco, CA" oninput="updateLivePreview()">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="pGithub">GitHub Username</label>
+                                        <input type="text" id="pGithub" placeholder="githubusername" value="janedoe" oninput="updateLivePreview()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pLinkedin">LinkedIn Handle</label>
+                                        <input type="text" id="pLinkedin" placeholder="linkedin-username" value="jane-doe" oninput="updateLivePreview()">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Accordion: Skills Section -->
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <h3>2. Skills</h3>
+                                <svg class="arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                            <div class="accordion-content">
+                                <p class="helper-text">Add categories and enter skills separated by commas.</p>
+                                <div id="skillsContainer">
+                                    <!-- Dynamic skill rows go here -->
+                                </div>
+                                <button class="btn btn-secondary btn-small" onclick="addSkillCategory('', '')">+ Add Skill Category</button>
+                            </div>
+                        </div>
+
+                        <!-- Accordion: Projects Section -->
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <h3>3. Projects</h3>
+                                <svg class="arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                            <div class="accordion-content">
+                                <div id="projectsContainer">
+                                    <!-- Dynamic project items go here -->
+                                </div>
+                                <button class="btn btn-secondary btn-small" onclick="addProjectItem()">+ Add Project</button>
+                            </div>
+                        </div>
+
+                        <!-- Accordion: Education Section -->
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <h3>4. Education</h3>
+                                <svg class="arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                            <div class="accordion-content">
+                                <div id="educationContainer">
+                                    <!-- Dynamic education items go here -->
+                                </div>
+                                <button class="btn btn-secondary btn-small" onclick="addEducationItem()">+ Add Education</button>
+                            </div>
+                        </div>
+
+                        <!-- Accordion: Work Experience Section -->
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(this)">
+                                <h3>5. Experience & Extracurriculars</h3>
+                                <svg class="arrow" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                            <div class="accordion-content">
+                                <div id="experienceContainer">
+                                    <!-- Dynamic experience items go here -->
+                                </div>
+                                <button class="btn btn-secondary btn-small" onclick="addExperienceItem()">+ Add Experience</button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Style / Themes Tab Panel -->
+                    <div id="tabStyle" class="tab-panel">
+                        <div class="theme-customizer">
+                            <h3>Choose Template Style</h3>
+                            <div class="template-selector">
+                                <label class="template-card">
+                                    <input type="radio" name="selectedTemplate" value="neoglow" checked onchange="updateLivePreview()">
+                                    <div class="card-inner neoglow">
+                                        <div class="card-demo"></div>
+                                        <span>Neo-Glow (Dark Modern)</span>
+                                    </div>
+                                </label>
+                                <label class="template-card">
+                                    <input type="radio" name="selectedTemplate" value="minimalist" onchange="updateLivePreview()">
+                                    <div class="card-inner minimalist">
+                                        <div class="card-demo"></div>
+                                        <span>Minimalist (Academic)</span>
+                                    </div>
+                                </label>
+                                <label class="template-card">
+                                    <input type="radio" name="selectedTemplate" value="creative" onchange="updateLivePreview()">
+                                    <div class="card-inner creative">
+                                        <div class="card-demo"></div>
+                                        <span>Creative Pastel (Playful)</span>
+                                    </div>
+                                </label>
+                                <label class="template-card">
+                                    <input type="radio" name="selectedTemplate" value="cyberpunk" onchange="updateLivePreview()">
+                                    <div class="card-inner cyberpunk">
+                                        <div class="card-demo"></div>
+                                        <span>Cyberpunk (Terminal)</span>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <hr class="divider">
+
+                            <h3>Accent Theme Colors</h3>
+                            <div class="accent-picker">
+                                <button class="color-dot active" style="background-color: #3b82f6;" data-color="blue" onclick="setAccentColor('blue')"></button>
+                                <button class="color-dot" style="background-color: #10b981;" data-color="emerald" onclick="setAccentColor('emerald')"></button>
+                                <button class="color-dot" style="background-color: #8b5cf6;" data-color="violet" onclick="setAccentColor('violet')"></button>
+                                <button class="color-dot" style="background-color: #ec4899;" data-color="pink" onclick="setAccentColor('pink')"></button>
+                                <button class="color-dot" style="background-color: #f59e0b;" data-color="amber" onclick="setAccentColor('amber')"></button>
+                            </div>
+
+                            <hr class="divider">
+
+                            <h3>Typography Options</h3>
+                            <div class="font-selector">
+                                <label for="fontSelect">Primary Font</label>
+                                <select id="fontSelect" onchange="updateLivePreview()">
+                                    <option value="plus-jakarta">Plus Jakarta Sans (Modern Sans)</option>
+                                    <option value="jetbrains">JetBrains Mono (Tech/Monospace)</option>
+                                    <option value="playfair">Playfair Display (Serif/Classic)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+
+            <!-- Right Side: Interactive Preview Section -->
+            <section class="preview-panel">
+                
+                <!-- Viewport Control Bar -->
+                <div class="preview-control-bar">
+                    <div class="device-buttons">
+                        <button class="device-btn active" id="btnDeviceDesktop" onclick="setDeviceView('desktop')">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" ry="2"/><path d="M8 21h8m-4-4v4"/></svg>
+                            <span>Desktop</span>
+                        </button>
+                        <button class="device-btn" id="btnDeviceTablet" onclick="setDeviceView('tablet')">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="14" height="18" x="5" y="3" rx="2" ry="2"/><circle cx="12" cy="18" r="1"/></svg>
+                            <span>Tablet</span>
+                        </button>
+                        <button class="device-btn" id="btnDeviceMobile" onclick="setDeviceView('mobile')">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="10" height="16" x="7" y="4" rx="2" ry="2"/><circle cx="12" cy="17" r="1"/></svg>
+                            <span>Mobile</span>
+                        </button>
+                    </div>
+
+                    <div class="preview-actions">
+                        <span class="preview-status-indicator">
+                            <span class="status-pulse"></span>
+                            Live Sync
+                        </span>
+                        <button class="btn btn-secondary btn-small" onclick="updateLivePreview(true)">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12"/></svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preview Display Area -->
+                <div class="iframe-container">
+                    <div class="iframe-wrapper desktop" id="previewWrapper">
+                        <iframe id="livePreviewIframe" sandbox="allow-scripts"></iframe>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Script imports -->
+    <script src="templates.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
