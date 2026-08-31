@@ -1,606 +1,612 @@
 /**
- * PORTFOLIA - MAIN APPLICATION LOGIC
- * Manages states, forms, events, preview renders, and File System exports.
+ * ONYX - CORE APPLICATION CONTROLLER
+ * Controls conversational terminal states, live previews, custom cursors, magnetic physics, and File System exports.
  */
 
-// Default starter profile state
-const defaultState = {
+// --- 1. APPLICATION STATE ---
+const state = {
+    // User Profile
     name: "Jane Doe",
-    title: "Computer Science Student & Researcher",
+    department: "Computer Science & Engineering",
+    rollNumber: "CSE-2026-088",
     bio: "I am a junior computer science student passionate about artificial intelligence, human-computer interaction, and building responsive frontend experiences.",
-    email: "jane.doe@university.edu",
-    location: "Boston, MA",
-    github: "janedoe",
-    linkedin: "jane-doe-edu",
-    skills: [
-        { category: "Languages", items: ["Python", "Java", "JavaScript", "C++", "HTML/CSS"] },
-        { category: "Frameworks & Tools", items: ["React", "Node.js", "Git", "GitHub Pages", "VS Code"] }
-    ],
-    projects: [
-        { 
-            name: "Smart Campus Dashboard", 
-            desc: "Designed and implemented a real-time web portal tracking university study-space occupancies. Reduced search times by 40%.", 
-            tech: "React, CSS Variables, Firebase, ChartJS", 
-            link: "https://github.com/janedoe/smart-campus" 
-        },
-        { 
-            name: "EcoNotify Engine", 
-            desc: "A background service that sends daily air-quality analysis alerts to registered subscribers using environmental APIs.", 
-            tech: "Node.js, Express, OpenWeather API", 
-            link: "" 
-        }
-    ],
-    education: [
-        { school: "Massachusetts Tech", degree: "B.S. in Computer Science", year: "2023 - 2027" }
-    ],
-    experience: [
-        { 
-            company: "Dept of Computer Science", 
-            role: "Undergraduate Research Assistant", 
-            duration: "Sep 2025 - Present", 
-            desc: "Assisting in building data visualizers for molecular sequence alignments. Co-authored a toolkit for sequence mappings." 
-        },
-        { 
-            company: "TechCorps NGO", 
-            role: "Web Design Instructor", 
-            duration: "Summer 2025", 
-            desc: "Instructed 30+ high school students on HTML/CSS foundations and responsive portfolio construction." 
-        }
-    ],
-    selectedTemplate: "neoglow",
-    themeColor: "blue",
-    font: "plus-jakarta"
+    skills: "JavaScript, HTML/CSS, React, Python, Git",
+    certificates: "Google UX Design Professional Certificate, AWS Certified Developer",
+    selectedTemplate: "cosmic",
+    
+    // UI Mechanics
+    mouse: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+    cursor: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+    
+    // Magnetic Button trackers
+    magneticButtons: [],
+    
+    // Terminal Wizard Flow
+    currentStep: 0,
+    terminalHistory: [],
+    isTyping: false
 };
 
-let portfolioState = {};
+// Conversational prompts list
+const terminalPrompts = [
+    {
+        field: "name",
+        prompt: "ACCESS GRANTED. INITIALIZING PROFILE BUILDER...\n\nENTER CREATOR FULL NAME:",
+        placeholder: "e.g., Jane Doe"
+    },
+    {
+        field: "department",
+        prompt: "NAME LOGGED.\n\nENTER ACADEMIC DEPARTMENT / MAJOR:",
+        placeholder: "e.g., Computer Science & Engineering"
+    },
+    {
+        field: "rollNumber",
+        prompt: "DEPARTMENT RECORDED.\n\nENTER STUDENT ID / ROLL NUMBER:",
+        placeholder: "e.g., CSE-2026-088"
+    },
+    {
+        field: "bio",
+        prompt: "ROLL NUMBER INDEXED.\n\nPROVIDE A BRIEF PROFESSIONAL BIO / CREATOR STATEMENT:",
+        placeholder: "A passionate student developer exploring..."
+    },
+    {
+        field: "skills",
+        prompt: "STATEMENT COMPILED.\n\nENTER CORE SKILLS (comma-separated):",
+        placeholder: "HTML, CSS, JavaScript, React, Python"
+    },
+    {
+        field: "certificates",
+        prompt: "SKILLS INDEXED.\n\nENTER VALIDATED CREDENTIALS / CERTIFICATES (comma-separated):",
+        placeholder: "Google UX Professional Certificate, AWS Certified Cloud Practitioner"
+    }
+];
 
-// On Load initialization
+// --- 2. INITIALIZATION ON LOAD ---
 document.addEventListener("DOMContentLoaded", () => {
-    // Check local storage for state
-    const saved = localStorage.getItem("portfolia_state");
-    if (saved) {
-        try {
-            portfolioState = JSON.parse(saved);
-        } catch (e) {
-            portfolioState = { ...defaultState };
-        }
-    } else {
-        portfolioState = { ...defaultState };
-    }
+    // A. Setup starfield canvas
+    initStarfield();
 
-    // Bind static fields
-    bindStaticFields();
+    // B. Setup custom cursors & loop
+    initCursorLoop();
 
-    // Render Dynamic Form items
-    renderDynamicForms();
+    // C. Setup magnetic elements
+    registerMagneticButtons();
 
-    // Setup tabs
-    setupTabSystem();
-
-    // Apply active color and font selectors
-    applyThemeSelections();
-
-    // If already logged in, skip auth screen (for debugging, but let's always show it once for cool demo)
-    const loggedIn = localStorage.getItem("portfolia_logged_in");
-    if (loggedIn === "true") {
-        document.getElementById("authScreen").classList.add("hidden");
-        document.getElementById("appWorkspace").classList.remove("hidden");
-        updateLivePreview(true);
-    }
+    // D. Bind text fields in editor sidebar to state updates
+    bindEditorFields();
+    
+    // E. Initialize Clock
+    updateClock();
+    setInterval(updateClock, 1000);
 });
 
-// Bind UI static elements to state changes
-function bindStaticFields() {
-    const fields = ['pName', 'pTitle', 'pBio', 'pEmail', 'pLocation', 'pGithub', 'pLinkedin'];
-    fields.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            // Map state properties
-            const prop = id.charAt(1).toLowerCase() + id.slice(2);
-            el.value = portfolioState[prop] || "";
-            
-            el.addEventListener("input", (e) => {
-                portfolioState[prop] = e.target.value;
-                updateLivePreview();
-            });
+function updateClock() {
+    const timeEl = document.getElementById("system-time");
+    if (timeEl) {
+        const now = new Date();
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        const secs = String(now.getSeconds()).padStart(2, '0');
+        timeEl.innerText = `ONYX OS // SECURE CONNECTION // ${hrs}:${mins}:${secs}`;
+    }
+}
+
+// --- 3. CANVAS STARFIELD WITH PARALLAX ---
+const canvasState = {
+    canvas: null,
+    ctx: null,
+    stars: []
+};
+
+function initStarfield() {
+    canvasState.canvas = document.getElementById("space-canvas");
+    if (!canvasState.canvas) return;
+    canvasState.ctx = canvasState.canvas.getContext("2d");
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    // Populate initial stars
+    for (let i = 0; i < 150; i++) {
+        canvasState.stars.push({
+            x: Math.random() * canvasState.canvas.width,
+            y: Math.random() * canvasState.canvas.height,
+            radius: Math.random() * 1.5 + 0.2,
+            opacity: Math.random() * 0.8 + 0.2,
+            speed: Math.random() * 0.04 + 0.01,
+            depth: Math.random() * 1.2 + 0.3 // parallax depth factor
+        });
+    }
+}
+
+function resizeCanvas() {
+    if (!canvasState.canvas) return;
+    canvasState.canvas.width = window.innerWidth;
+    canvasState.canvas.height = window.innerHeight;
+}
+
+function drawStarfield() {
+    const { canvas, ctx, stars } = canvasState;
+    if (!canvas || !ctx) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    for (let i = 0; i < stars.length; i++) {
+        const s = stars[i];
+        
+        // Vertical drift
+        s.y -= s.speed;
+        if (s.y < 0) s.y = canvas.height;
+
+        // Parallax coordinates shift based on mouse relative to center
+        const mouseDx = (state.mouse.x - window.innerWidth / 2) * 0.015 * s.depth;
+        const mouseDy = (state.mouse.y - window.innerHeight / 2) * 0.015 * s.depth;
+
+        let renderX = s.x - mouseDx;
+        let renderY = s.y - mouseDy;
+
+        // Wrap around borders
+        if (renderX < 0) renderX += canvas.width;
+        if (renderX > canvas.width) renderX -= canvas.width;
+        if (renderY < 0) renderY += canvas.height;
+        if (renderY > canvas.height) renderY -= canvas.height;
+
+        ctx.beginPath();
+        ctx.arc(renderX, renderY, s.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+        ctx.fill();
+    }
+}
+
+// --- 4. FLUID PHYSICS CUSTOM CURSOR ---
+function initCursorLoop() {
+    const cursorDot = document.getElementById("cursor-dot");
+    const cursorRing = document.getElementById("cursor-ring");
+
+    window.addEventListener("mousemove", (e) => {
+        state.mouse.x = e.clientX;
+        state.mouse.y = e.clientY;
+        
+        // Immediate position for center dot
+        if (cursorDot) {
+            cursorDot.style.left = `${state.mouse.x}px`;
+            cursorDot.style.top = `${state.mouse.y}px`;
         }
+
+        // Apply mouse-move parallax on ambient glow circles
+        const glows = document.querySelectorAll(".ambient-glow");
+        glows.forEach((glow, idx) => {
+            const factor = (idx + 1) * 0.03;
+            const dx = (state.mouse.x - window.innerWidth / 2) * factor;
+            const dy = (state.mouse.y - window.innerHeight / 2) * factor;
+            glow.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+        });
+    });
+
+    // Custom animation tick
+    function tick() {
+        // Redraw starfield
+        drawStarfield();
+
+        // Cursor ring trailing with linear interpolation (lerp)
+        const activeMagnet = state.magneticButtons.find(btn => btn.isHovered);
+        
+        if (activeMagnet && cursorRing) {
+            // Snapped state: Lock outer ring around the button boundaries
+            const rect = activeMagnet.element.getBoundingClientRect();
+            const targetX = rect.left + rect.width / 2;
+            const targetY = rect.top + rect.height / 2;
+
+            state.cursor.x += (targetX - state.cursor.x) * 0.22;
+            state.cursor.y += (targetY - state.cursor.y) * 0.22;
+
+            cursorRing.style.left = `${state.cursor.x}px`;
+            cursorRing.style.top = `${state.cursor.y}px`;
+        } else if (cursorRing) {
+            // Normal trailing state
+            state.cursor.x += (state.mouse.x - state.cursor.x) * 0.15;
+            state.cursor.y += (state.mouse.y - state.cursor.y) * 0.15;
+
+            cursorRing.style.left = `${state.cursor.x}px`;
+            cursorRing.style.top = `${state.cursor.y}px`;
+        }
+
+        // Run magnetic button transformations
+        updateMagneticPhysics();
+
+        requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+}
+
+// --- 5. MAGNETIC UI INTERACTION ---
+function registerMagneticButtons() {
+    // Register buttons by IDs
+    const buttonIds = ["googleLoginBtn", "termSendBtn", "exportBtn"];
+    
+    buttonIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        const record = {
+            id: id,
+            element: el,
+            parent: el.parentElement,
+            isHovered: false,
+            // Track translated coords
+            x: 0,
+            y: 0,
+            targetX: 0,
+            targetY: 0
+        };
+
+        // Event triggers
+        el.addEventListener("mouseenter", () => {
+            record.isHovered = true;
+            
+            const cursorRing = document.getElementById("cursor-ring");
+            const cursorDot = document.getElementById("cursor-dot");
+            if (cursorRing) {
+                cursorRing.classList.add("magnet-locked");
+                if (id === "exportBtn") cursorRing.classList.add("magnet-locked-export");
+            }
+            if (cursorDot) cursorDot.classList.add("magnet-locked");
+        });
+
+        el.addEventListener("mouseleave", () => {
+            record.isHovered = false;
+            record.targetX = 0;
+            record.targetY = 0;
+
+            const cursorRing = document.getElementById("cursor-ring");
+            const cursorDot = document.getElementById("cursor-dot");
+            if (cursorRing) {
+                cursorRing.classList.remove("magnet-locked");
+                cursorRing.classList.remove("magnet-locked-export");
+            }
+            if (cursorDot) cursorDot.classList.remove("magnet-locked");
+        });
+
+        state.magneticButtons.push(record);
     });
 }
 
-// Google Login Mock Animation Sequence
+function updateMagneticPhysics() {
+    state.magneticButtons.forEach(btn => {
+        const rect = btn.element.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const dx = state.mouse.x - centerX;
+        const dy = state.mouse.y - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        const triggerRadius = 130;
+
+        if (distance < triggerRadius) {
+            // Apply magnetic attraction
+            const pullFactor = (triggerRadius - distance) / triggerRadius;
+            const easePull = Math.pow(pullFactor, 1.8);
+            
+            // Sub-elements transform weights (parallax layering)
+            btn.targetX = dx * easePull * 0.45;
+            btn.targetY = dy * easePull * 0.45;
+
+            // Highlight proximity on custom cursor
+            const cursorRing = document.getElementById("cursor-ring");
+            if (cursorRing && !btn.isHovered) {
+                cursorRing.classList.add("magnet-near");
+            }
+        } else {
+            // Reset proximity indicator
+            const cursorRing = document.getElementById("cursor-ring");
+            if (cursorRing && !state.magneticButtons.some(b => b.isHovered)) {
+                cursorRing.classList.remove("magnet-near");
+            }
+        }
+
+        // Apply smooth lerping on button translation coordinates
+        btn.x += (btn.targetX - btn.x) * 0.12;
+        btn.y += (btn.targetY - btn.y) * 0.12;
+
+        // Apply transforms to core layers
+        btn.element.style.transform = `translate3d(${btn.x}px, ${btn.y}px, 0)`;
+        
+        // Parallax depth offsets on inner layers
+        const glow = btn.element.querySelector(".btn-glow-layer");
+        const body = btn.element.querySelector(".btn-body-layer");
+        const content = btn.element.querySelector(".btn-content-layer");
+
+        if (glow) glow.style.transform = `translate3d(${btn.x * 0.5}px, ${btn.y * 0.5}px, 0)`;
+        if (body) body.style.transform = `translate3d(${btn.x * 0.8}px, ${btn.y * 0.8}px, 0)`;
+        if (content) content.style.transform = `translate3d(${btn.x * 1.1}px, ${btn.y * 1.1}px, 10px)`;
+    });
+}
+
+// --- 6. GOOGLE SIGN IN ACTION ---
 function triggerGoogleLogin() {
     const btn = document.getElementById("googleLoginBtn");
     const loader = document.getElementById("authLoading");
     const statusText = document.getElementById("authStatusText");
 
-    btn.classList.add("hidden");
-    loader.classList.remove("hidden");
+    if (btn) btn.style.display = "none";
+    if (loader) loader.classList.remove("hidden");
 
     setTimeout(() => {
-        statusText.innerText = "Authenticating with Jane Doe's account...";
+        if (statusText) statusText.innerText = "Securing OAuth 2.0 Credentials...";
     }, 800);
 
     setTimeout(() => {
-        statusText.innerText = "Synchronizing profiles...";
+        if (statusText) statusText.innerText = "Establishing encrypted profile gateway...";
     }, 1800);
 
     setTimeout(() => {
-        statusText.innerHTML = "<span style='color: #10b981; font-weight: 700;'>✔ Connected as Jane Doe!</span>";
-        localStorage.setItem("portfolia_logged_in", "true");
+        if (statusText) statusText.innerHTML = "<span style='color: #10b981;'>✔ GATEWAY LOCK RESOLVED</span>";
     }, 2800);
 
     setTimeout(() => {
-        const auth = document.getElementById("authScreen");
-        const work = document.getElementById("appWorkspace");
+        // Transition to Screen 2: Conversational Terminal
+        const screen1 = document.getElementById("screenAuth");
+        const screen2 = document.getElementById("screenTerminal");
         
-        auth.style.opacity = "0";
-        auth.style.transform = "scale(0.95)";
+        if (screen1) screen1.classList.add("hidden");
+        if (screen2) {
+            screen2.classList.remove("hidden");
+            // Focus terminal input
+            const input = document.getElementById("terminalInput");
+            if (input) input.focus();
+            
+            // Kick off conversational wizard
+            initTerminalWizard();
+        }
+    }, 3600);
+}
+
+// --- 7. CONVERSATIONAL TERMINAL SYSTEM ---
+function initTerminalWizard() {
+    const screen = document.getElementById("terminalScreen");
+    if (!screen) return;
+
+    // Reset wizard
+    state.currentStep = 0;
+    screen.innerHTML = "";
+    
+    // First message print
+    printTerminalLine("SYSTEM STATUS // ONYX PORTAL INITIALIZED SUCCESS", "sys");
+    setTimeout(() => {
+        promptNextStep();
+    }, 800);
+
+    // Bind terminal prompt form submit
+    const termForm = document.getElementById("terminalPromptForm");
+    if (termForm) {
+        termForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            handleTerminalSubmit();
+        });
+    }
+
+    // Keep focus on terminal text box when clicking the screen container
+    screen.addEventListener("click", () => {
+        const input = document.getElementById("terminalInput");
+        if (input) input.focus();
+    });
+}
+
+function printTerminalLine(text, type = "normal") {
+    const screen = document.getElementById("terminalScreen");
+    if (!screen) return;
+
+    const line = document.createElement("div");
+    line.className = `term-log ${type}`;
+    screen.appendChild(line);
+
+    // Typing effect for text line
+    let index = 0;
+    state.isTyping = true;
+    
+    function typeChar() {
+        if (index < text.length) {
+            line.innerHTML += text.charAt(index);
+            index++;
+            screen.scrollTop = screen.scrollHeight;
+            setTimeout(typeChar, 10);
+        } else {
+            state.isTyping = false;
+        }
+    }
+    typeChar();
+}
+
+function promptNextStep() {
+    if (state.currentStep >= terminalPrompts.length) {
+        // End of questions - load Engine Workspace
+        printTerminalLine("\nDATA COMPILING PROCESS RESOLVED...", "success");
+        setTimeout(() => {
+            printTerminalLine("GENERATING SITE METRIC NODES...", "sys");
+        }, 800);
         
         setTimeout(() => {
-            auth.classList.add("hidden");
-            work.classList.remove("hidden");
-            work.style.opacity = "0";
-            setTimeout(() => {
-                work.style.transition = "opacity 0.6s ease";
-                work.style.opacity = "1";
-                updateLivePreview(true);
-                showToast("Workspace unlocked. Welcome, Jane!");
-            }, 50);
-        }, 300);
-    }, 3800);
-}
+            printTerminalLine("LAUNCHING LIVE ENGINE CORE...", "success");
+        }, 1800);
 
-// Renders dynamic forms (skills, projects, etc.) without losing state
-function renderDynamicForms() {
-    renderSkillsForms();
-    renderProjectsForms();
-    renderEducationForms();
-    renderExperienceForms();
-}
+        setTimeout(() => {
+            transitionToWorkspace();
+        }, 2800);
+        return;
+    }
 
-// -------------------------------------------------------------
-// Skills Category render & logic
-// -------------------------------------------------------------
-function renderSkillsForms() {
-    const container = document.getElementById("skillsContainer");
-    container.innerHTML = "";
-    
-    portfolioState.skills.forEach((cat, idx) => {
-        const row = document.createElement("div");
-        row.className = "dynamic-item-card";
-        row.innerHTML = `
-            <button class="card-remove-btn" onclick="removeSkillCategory(${idx})" title="Delete Section">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            </button>
-            <div class="form-group">
-                <label>Category Title</label>
-                <input type="text" value="${cat.category}" placeholder="e.g., Programming Languages" oninput="updateSkillCategory(${idx}, this.value)">
-            </div>
-            <div class="form-group">
-                <label>Skills (Comma-separated)</label>
-                <input type="text" value="${cat.items.join(', ')}" placeholder="e.g., Python, C++, Go" oninput="updateSkillItems(${idx}, this.value)">
-            </div>
-        `;
-        container.appendChild(row);
-    });
-}
+    const item = terminalPrompts[state.currentStep];
+    printTerminalLine("\n" + item.prompt, "sys");
 
-function addSkillCategory(catName = "", items = "") {
-    portfolioState.skills.push({
-        category: catName || "New Category",
-        items: items ? items.split(",").map(i => i.trim()) : []
-    });
-    renderSkillsForms();
-    updateLivePreview();
-}
-
-function updateSkillCategory(idx, val) {
-    portfolioState.skills[idx].category = val;
-    updateLivePreview();
-}
-
-function updateSkillItems(idx, val) {
-    portfolioState.skills[idx].items = val.split(",").map(i => i.trim()).filter(i => i.length > 0);
-    updateLivePreview();
-}
-
-function removeSkillCategory(idx) {
-    portfolioState.skills.splice(idx, 1);
-    renderSkillsForms();
-    updateLivePreview();
-}
-
-// -------------------------------------------------------------
-// Projects render & logic
-// -------------------------------------------------------------
-function renderProjectsForms() {
-    const container = document.getElementById("projectsContainer");
-    container.innerHTML = "";
-    
-    portfolioState.projects.forEach((proj, idx) => {
-        const card = document.createElement("div");
-        card.className = "dynamic-item-card";
-        card.innerHTML = `
-            <button class="card-remove-btn" onclick="removeProjectItem(${idx})" title="Delete Project">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            </button>
-            <div class="form-group">
-                <label>Project Title</label>
-                <input type="text" value="${proj.name}" placeholder="e.g., Campus Map App" oninput="updateProjectField(${idx}, 'name', this.value)">
-            </div>
-            <div class="form-group">
-                <label>Brief Description</label>
-                <textarea rows="2" placeholder="Describe the purpose and your impact..." oninput="updateProjectField(${idx}, 'desc', this.value)">${proj.desc}</textarea>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Technologies Used</label>
-                    <input type="text" value="${proj.tech || ''}" placeholder="e.g., React, Node, WebGL" oninput="updateProjectField(${idx}, 'tech', this.value)">
-                </div>
-                <div class="form-group">
-                    <label>Project URL (Optional)</label>
-                    <input type="text" value="${proj.link || ''}" placeholder="e.g., https://github.com/..." oninput="updateProjectField(${idx}, 'link', this.value)">
-                </div>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
-
-function addProjectItem() {
-    portfolioState.projects.push({ name: "New Project", desc: "Short description.", tech: "", link: "" });
-    renderProjectsForms();
-    updateLivePreview();
-}
-
-function updateProjectField(idx, field, val) {
-    portfolioState.projects[idx][field] = val;
-    updateLivePreview();
-}
-
-function removeProjectItem(idx) {
-    portfolioState.projects.splice(idx, 1);
-    renderProjectsForms();
-    updateLivePreview();
-}
-
-// -------------------------------------------------------------
-// Education render & logic
-// -------------------------------------------------------------
-function renderEducationForms() {
-    const container = document.getElementById("educationContainer");
-    container.innerHTML = "";
-
-    portfolioState.education.forEach((edu, idx) => {
-        const card = document.createElement("div");
-        card.className = "dynamic-item-card";
-        card.innerHTML = `
-            <button class="card-remove-btn" onclick="removeEducationItem(${idx})" title="Delete Entry">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            </button>
-            <div class="form-group">
-                <label>Institution / School</label>
-                <input type="text" value="${edu.school}" placeholder="e.g., State University" oninput="updateEducationField(${idx}, 'school', this.value)">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Degree & Major</label>
-                    <input type="text" value="${edu.degree}" placeholder="e.g., B.S. in Software Engineering" oninput="updateEducationField(${idx}, 'degree', this.value)">
-                </div>
-                <div class="form-group">
-                    <label>Years / Timeline</label>
-                    <input type="text" value="${edu.year}" placeholder="e.g., 2024 - Present" oninput="updateEducationField(${idx}, 'year', this.value)">
-                </div>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
-
-function addEducationItem() {
-    portfolioState.education.push({ school: "New University", degree: "Bachelor's Degree", year: "" });
-    renderEducationForms();
-    updateLivePreview();
-}
-
-function updateEducationField(idx, field, val) {
-    portfolioState.education[idx][field] = val;
-    updateLivePreview();
-}
-
-function removeEducationItem(idx) {
-    portfolioState.education.splice(idx, 1);
-    renderEducationForms();
-    updateLivePreview();
-}
-
-// -------------------------------------------------------------
-// Experience render & logic
-// -------------------------------------------------------------
-function renderExperienceForms() {
-    const container = document.getElementById("experienceContainer");
-    container.innerHTML = "";
-
-    portfolioState.experience.forEach((exp, idx) => {
-        const card = document.createElement("div");
-        card.className = "dynamic-item-card";
-        card.innerHTML = `
-            <button class="card-remove-btn" onclick="removeExperienceItem(${idx})" title="Delete Entry">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            </button>
-            <div class="form-group">
-                <label>Company / Organization</label>
-                <input type="text" value="${exp.company}" placeholder="e.g., Google" oninput="updateExperienceField(${idx}, 'company', this.value)">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Role / Position</label>
-                    <input type="text" value="${exp.role}" placeholder="e.g., Software Intern" oninput="updateExperienceField(${idx}, 'role', this.value)">
-                </div>
-                <div class="form-group">
-                    <label>Timeline / Duration</label>
-                    <input type="text" value="${exp.duration}" placeholder="e.g., June 2025 - August 2025" oninput="updateExperienceField(${idx}, 'duration', this.value)">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Description of Activities</label>
-                <textarea rows="2" placeholder="Detail your accomplishments..." oninput="updateExperienceField(${idx}, 'desc', this.value)">${exp.desc}</textarea>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
-
-function addExperienceItem() {
-    portfolioState.experience.push({ company: "New Company", role: "Specialist", duration: "", desc: "" });
-    renderExperienceForms();
-    updateLivePreview();
-}
-
-function updateExperienceField(idx, field, val) {
-    portfolioState.experience[idx][field] = val;
-    updateLivePreview();
-}
-
-function removeExperienceItem(idx) {
-    portfolioState.experience.splice(idx, 1);
-    renderExperienceForms();
-    updateLivePreview();
-}
-
-// -------------------------------------------------------------
-// Live Preview engine & autosave
-// -------------------------------------------------------------
-let updateTimeout = null;
-
-function updateLivePreview(immediate = false) {
-    // Save to local storage
-    localStorage.setItem("portfolia_state", JSON.stringify(portfolioState));
-
-    if (updateTimeout) clearTimeout(updateTimeout);
-    
-    const delay = immediate ? 0 : 80;
-    updateTimeout = setTimeout(() => {
-        // Read templates selections
-        const tRadios = document.getElementsByName("selectedTemplate");
-        for (let rad of tRadios) {
-            if (rad.checked) {
-                portfolioState.selectedTemplate = rad.value;
-                break;
-            }
-        }
-
-        portfolioState.font = document.getElementById("fontSelect").value;
-
-        // Render preview content
-        const iframe = document.getElementById("livePreviewIframe");
-        if (iframe) {
-            const previewHTML = buildPortfolioHTML(portfolioState, true); // true = inline styles for iframe preview
-            iframe.srcdoc = previewHTML;
-        }
-    }, delay);
-}
-
-// -------------------------------------------------------------
-// Viewport & Customization settings
-// -------------------------------------------------------------
-function setDeviceView(device) {
-    const wrapper = document.getElementById("previewWrapper");
-    
-    // Toggle active state in menu
-    const devices = ['desktop', 'tablet', 'mobile'];
-    devices.forEach(d => {
-        const btn = document.getElementById(`btnDevice${d.charAt(0).toUpperCase() + d.slice(1)}`);
-        if (btn) btn.classList.remove("active");
-    });
-    
-    document.getElementById(`btnDevice${device.charAt(0).toUpperCase() + device.slice(1)}`).classList.add("active");
-
-    // Set wrapper classes
-    wrapper.className = `iframe-wrapper ${device}`;
-}
-
-function applyThemeSelections() {
-    // Preset accent colors
-    setAccentColor(portfolioState.themeColor || 'blue', false);
-    
-    // Preset font
-    const fontSelect = document.getElementById("fontSelect");
-    if (fontSelect) fontSelect.value = portfolioState.font || "plus-jakarta";
-
-    // Preset template radios
-    const tRadios = document.getElementsByName("selectedTemplate");
-    for (let rad of tRadios) {
-        if (rad.value === portfolioState.selectedTemplate) {
-            rad.checked = true;
-            break;
-        }
+    const input = document.getElementById("terminalInput");
+    if (input) {
+        input.value = "";
+        input.placeholder = item.placeholder;
+        input.disabled = false;
+        input.focus();
     }
 }
 
-function setAccentColor(color, doRender = true) {
-    portfolioState.themeColor = color;
+function handleTerminalSubmit() {
+    if (state.isTyping) return; // Prevent spamming while text prints
+
+    const input = document.getElementById("terminalInput");
+    if (!input) return;
+
+    const value = input.value.trim();
+    if (!value) return;
+
+    // Log the user's input response in the terminal window
+    printTerminalLine("> " + value, "normal");
+
+    // Save user response to state
+    const field = terminalPrompts[state.currentStep].field;
+    state[field] = value;
+
+    // Disable input while advancing
+    input.disabled = true;
     
-    // Update theme selectors active state
-    const dots = document.querySelectorAll(".color-dot");
-    dots.forEach(d => {
-        d.classList.remove("active");
-        if (d.getAttribute("data-color") === color) {
-            d.classList.add("active");
-        }
-    });
-
-    // Update active variable color in editor itself
-    const root = document.documentElement;
-    const key = `accent-${color}`;
-    const value = root.style.getPropertyValue(`--accent-${color}`) || getComputedStyle(root).getPropertyValue(`--accent-${color}`);
-    root.style.setProperty('--accent', value);
-    root.style.setProperty('--accent-glow', `rgba(${AccentColors[color].rgb}, 0.15)`);
-
-    if (doRender) {
-        updateLivePreview();
-        showToast(`Accent color updated to ${color}`);
-    }
-}
-
-// Tab Panels toggle system
-function setupTabSystem() {
-    const tabBtns = document.querySelectorAll(".tab-btn");
-    tabBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            // Remove active classes
-            tabBtns.forEach(b => b.classList.remove("active"));
-            document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
-
-            // Add active classes
-            btn.classList.add("active");
-            const targetId = `tab${btn.getAttribute("data-tab").charAt(0).toUpperCase() + btn.getAttribute("data-tab").slice(1)}`;
-            const panel = document.getElementById(targetId);
-            if (panel) panel.classList.add("active");
-        });
-    });
-}
-
-// Accordion expansion logic
-function toggleAccordion(header) {
-    const item = header.parentElement;
-    const isActive = item.classList.contains("active");
+    // Advance step
+    state.currentStep++;
     
-    // Close other items (optional, but let's allow multi-open for easier scrolling, just toggle)
-    item.classList.toggle("active");
-}
-
-// -------------------------------------------------------------
-// Import / Export Operations
-// -------------------------------------------------------------
-function triggerImportJson() {
-    document.getElementById("importJsonInput").click();
-}
-
-function handleImportJson(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            // Simple validation check
-            if (!data.name || !data.skills) {
-                alert("Invalid portfolio-data file structure. Ensure name and skills exist.");
-                return;
-            }
-            
-            // Override state
-            portfolioState = { ...defaultState, ...data };
-            
-            // Re-populate static fields
-            bindStaticFields();
-
-            // Re-render forms
-            renderDynamicForms();
-
-            // Apply style configs
-            applyThemeSelections();
-
-            // Refresh preview
-            updateLivePreview(true);
-
-            showToast("Portfolio state loaded successfully!");
-        } catch (err) {
-            alert("Error parsing JSON file: " + err.message);
-        }
-    };
-    reader.readAsText(file);
-}
-
-// File System Access API Implementation
-async function exportToLocalFolder() {
-    try {
-        if (!window.showDirectoryPicker) {
-            alert('Your browser does not support the File System Access API. Please use a modern desktop version of Chrome or Edge.');
-            return;
-        }
-
-        // Show directory selector
-        const directoryHandle = await window.showDirectoryPicker({
-            mode: 'readwrite'
-        });
-
-        // 1. Save index.html
-        const indexHTML = buildPortfolioHTML(portfolioState, false); // false = link external style.css
-        const indexFileHandle = await directoryHandle.getFileHandle('index.html', { create: true });
-        const indexWritable = await indexFileHandle.createWritable();
-        await indexWritable.write(indexHTML);
-        await indexWritable.close();
-
-        // 2. Save style.css
-        const customCSS = buildPortfolioCSS(portfolioState);
-        const cssFileHandle = await directoryHandle.getFileHandle('style.css', { create: true });
-        const cssWritable = await cssFileHandle.createWritable();
-        await cssWritable.write(customCSS);
-        await cssWritable.close();
-
-        // 3. Save README.md
-        const readmeContent = buildReadmeMD(portfolioState.name);
-        const readmeFileHandle = await directoryHandle.getFileHandle('README.md', { create: true });
-        const readmeWritable = await readmeFileHandle.createWritable();
-        await readmeWritable.write(readmeContent);
-        await readmeWritable.close();
-
-        // 4. Save portfolio-data.json (for re-importing later)
-        const jsonContent = JSON.stringify(portfolioState, null, 2);
-        const jsonFileHandle = await directoryHandle.getFileHandle('portfolio-data.json', { create: true });
-        const jsonWritable = await jsonFileHandle.createWritable();
-        await jsonWritable.write(jsonContent);
-        await jsonWritable.close();
-
-        showToast("Success! Web files saved to local folder.");
-
-    } catch (error) {
-        console.error("Export failed:", error);
-        if (error.name !== 'AbortError') {
-            alert('An error occurred during save: ' + error.message);
-        }
-    }
-}
-
-// Simple dynamic Toast notification
-function showToast(message) {
-    // Check if toast already exists
-    let toast = document.getElementById("editorToast");
-    if (!toast) {
-        toast = document.createElement("div");
-        toast.id = "editorToast";
-        toast.className = "toast";
-        document.body.appendChild(toast);
-    }
-    
-    toast.innerText = message;
-    toast.classList.add("visible");
-
-    // Hide after 3.5 seconds
     setTimeout(() => {
-        toast.classList.remove("visible");
+        promptNextStep();
+    }, 600);
+}
+
+function transitionToWorkspace() {
+    const screen2 = document.getElementById("screenTerminal");
+    const screen3 = document.getElementById("screenWorkspace");
+
+    if (screen2) screen2.classList.add("hidden");
+    if (screen3) {
+        screen3.classList.remove("hidden");
+        
+        // Sync terminal entries directly to the editor form sidebar
+        document.getElementById("editName").value = state.name;
+        document.getElementById("editDept").value = state.department;
+        document.getElementById("editRoll").value = state.rollNumber;
+        document.getElementById("editBio").value = state.bio;
+        document.getElementById("editSkills").value = state.skills;
+        document.getElementById("editCert").value = state.certificates;
+
+        // Render preview
+        updateLivePreview();
+    }
+}
+
+// --- 8. EDITOR SIDEBAR PANEL SYNCS ---
+function bindEditorFields() {
+    const inputs = ["editName", "editDept", "editRoll", "editBio", "editSkills", "editCert"];
+    
+    inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.addEventListener("input", (e) => {
+            const field = id.replace("edit", "").toLowerCase();
+            // Mapping special fields manually
+            let stateField = field;
+            if (field === "dept") stateField = "department";
+            if (field === "roll") stateField = "rollNumber";
+            if (field === "cert") stateField = "certificates";
+
+            state[stateField] = e.target.value;
+            
+            // Re-render live preview IFrame
+            updateLivePreview();
+        });
+    });
+}
+
+function selectTheme(themeKey) {
+    state.selectedTemplate = themeKey;
+    
+    // Update active visual tags
+    const opts = document.querySelectorAll(".theme-opt");
+    opts.forEach(opt => {
+        opt.classList.remove("active");
+        if (opt.getAttribute("onclick").includes(themeKey)) {
+            opt.classList.add("active");
+        }
+    });
+
+    updateLivePreview();
+}
+
+// --- 9. REAL-TIME PREVIEW GENERATION ---
+function updateLivePreview() {
+    const iframe = document.getElementById("previewIframe");
+    if (!iframe) return;
+
+    // Use builder functions inside templates.js
+    if (typeof buildPortfolioHTML === "function") {
+        const compiledHTML = buildPortfolioHTML(state);
+        iframe.srcdoc = compiledHTML;
+    }
+}
+
+// --- 10. NATIVE FILE SYSTEM DIRECTORY ACCESS API EXPORTER ---
+async function exportPortfolio() {
+    // Generate compiled code
+    const portfolioContent = buildPortfolioHTML(state);
+
+    // Try modern directory picker API first
+    if ('showDirectoryPicker' in window) {
+        try {
+            // Prompt folder picker dialog
+            const dirHandle = await window.showDirectoryPicker();
+            
+            // Create index.html file handle
+            const fileHandle = await dirHandle.getFileHandle('index.html', { create: true });
+            
+            // Request permissions write access stream
+            const writable = await fileHandle.createWritable();
+            
+            // Write string content
+            await writable.write(portfolioContent);
+            
+            // Close stream saving changes
+            await writable.close();
+            
+            // Trigger floating success notification
+            showToast("PORTFOLIO index.html WRITTEN TO LOCAL FOLDER!");
+        } catch (err) {
+            console.error("Directory Picker Error/Canceled: ", err);
+            // Handle User Cancelation vs API write failure
+            if (err.name !== 'AbortError') {
+                // Trigger fallback download
+                triggerBlobDownload(portfolioContent);
+            }
+        }
+    } else {
+        // Fallback: browser does not support Directory Picker API (e.g. Firefox/Safari)
+        triggerBlobDownload(portfolioContent);
+    }
+}
+
+// Standard Blob Download helper
+function triggerBlobDownload(content) {
+    const blob = new Blob([content], { type: "text/html" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "index.html";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showToast("ONYX COMPILATION DOWNLOADED VIA WEB BLOB STREAM");
+}
+
+function showToast(message) {
+    const toast = document.getElementById("toastNotice");
+    if (!toast) return;
+
+    toast.innerText = message;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
     }, 3500);
 }
