@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Warp - Magnetic Button & Space Scene</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================
+           RESET & CSS VARIABLES
+           ========================================== */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        :root {
+            --bg-color: #03040b;
+            --primary: #00f2fe;
+            --primary-glow: rgba(0, 242, 254, 0.4);
+            --secondary: #9b51e0;
+            --secondary-glow: rgba(155, 81, 224, 0.4);
+            --accent: #ff007f;
+            --accent-glow: rgba(255, 0, 127, 0.4);
+            --text-color: #f3f4f6;
+            --text-muted: #9ca3af;
+            --glass-bg: rgba(10, 11, 30, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-sans);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: none; /* Hide default cursor */
+        }
+
+        /* ==========================================
+           BACKGROUND & LIGHTING EFFECTS
+           ========================================== */
+        #space-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Cinematic ambient light overlays */
+        .ambient-glow {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+            filter: blur(140px);
+            opacity: 0.45;
+            mix-blend-mode: screen;
+            animation: floatGlow 18s ease-in-out infinite alternate;
+        }
+
+        .glow-cyan {
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, var(--primary) 0%, rgba(3, 4, 11, 0) 70%);
+            top: -20vh;
+            left: -10vw;
+        }
+
+        .glow-purple {
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, var(--secondary) 0%, rgba(3, 4, 11, 0) 70%);
+            bottom: -15vh;
+            right: -5vw;
+            animation-delay: -6s;
+        }
+
+        .glow-magenta {
+            width: 40vw;
+            height: 40vw;
+            background: radial-gradient(circle, var(--accent) 0%, rgba(3, 4, 11, 0) 70%);
+            top: 30vh;
+            left: 50vw;
+            opacity: 0.25;
+            animation-delay: -12s;
+        }
+
+        @keyframes floatGlow {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(4%, 3%) scale(1.1); }
+            100% { transform: translate(-2%, -5%) scale(0.95); }
+        }
+
+        /* ==========================================
+           DASHBOARD SCI-FI FRAMEWORK
+           ========================================== */
+        .hud-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2.5rem;
+            box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+        }
+
+        /* Glassmorphic boxes that accept pointer events if needed */
+        .hud-interactive {
+            pointer-events: auto;
+        }
+
+        header.hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hud-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .hud-badge {
+            background: rgba(0, 242, 254, 0.1);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            color: var(--primary);
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.2);
+        }
+
+        .hud-logo {
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #fff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hud-system-time {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        /* Widgets Panels */
+        .hud-body {
+            flex-grow: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 2rem 0;
+        }
+
+        .hud-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            width: 260px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hud-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+        }
+
+        .hud-panel-title {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding-bottom: 0.5rem;
+        }
+
+        .hud-metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+        }
+
+        .hud-metric-label {
+            color: var(--text-muted);
+        }
+
+        .hud-metric-value {
+            font-family: var(--font-mono);
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .hud-metric-value.cyan {
+            color: var(--primary);
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .hud-metric-value.pink {
+            color: var(--accent);
+            text-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        .system-graph {
+            height: 35px;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            margin-top: 0.5rem;
+        }
+
+        .system-graph-bar {
+            flex-grow: 1;
+            background: rgba(0, 242, 254, 0.15);
+            border-radius: 2px;
+            height: 20%;
+            transition: height 0.15s ease, background-color 0.3s ease;
+        }
+
+        /* Footer */
+        .hud-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            letter-spacing: 1px;
+        }
+
+        /* ==========================================
+           CHARACTER DESIGN: FLOATING ASTRONAUT
+           ========================================== */
+        .character-container {
+            position: absolute;
+            z-index: 3;
+            width: 140px;
+            height: 180px;
+            right: 18%;
+            top: 25%;
+            pointer-events: none;
+            animation: astronautFloat 6s ease-in-out infinite alternate;
+        }
+
+        @keyframes astronautFloat {
+            0% { transform: translateY(0) rotate(-3deg); }
+            100% { transform: translateY(-18px) rotate(3deg); }
+        }
+
+        .astronaut {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.5))
+                    drop-shadow(0 0 35px rgba(155, 81, 224, 0.25));
+        }
+
+        /* Interactivity on Visor Reflection */
+        .visor-reflection {
+            transform-origin: center;
+            transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* ==========================================
+           INTERACTIVE BUTTON AREA
+           ========================================== */
+        .interactive-center {
+            position: relative;
+            z-index: 4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 400px;
+            height: 400px;
+        }
+
+        /* Proximity field ring - visualizer helper */
+        .proximity-visualizer {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            border: 1px dashed rgba(0, 242, 254, 0.08);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.4s ease, transform 0.1s ease;
+            transform: scale(1);
+        }
+
+        .proximity-visualizer::before {
+            content: '';
+            position: absolute;
+            width: 110%;
+            height: 110%;
+            border-radius: 50%;
+            border: 1px dashed rgba(155, 81, 224, 0.03);
+            animation: spinCW 45s linear infinite;
+        }
+
+        @keyframes spinCW {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Hover proximity status changes visually */
+        .interactive-center.near .proximity-visualizer {
+            border-color: rgba(0, 242, 254, 0.22);
+            box-shadow: inset 0 0 20px rgba(0, 242, 254, 0.02);
+            transform: scale(1.03);
+        }
+
+        .interactive-center.attracted .proximity-visualizer {
+            border-color: rgba(155, 81, 224, 0.35);
+            box-shadow: inset 0 0 35px rgba(155, 81, 224, 0.05);
+            transform: scale(0.97);
+        }
+
+        /* 3D Parallax Magnetic Button */
+        .magnetic-btn-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: none;
+            z-index: 10;
+        }
+
+        .magnetic-btn {
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 1.3rem 2.8rem;
+            color: #fff;
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            cursor: none;
+            border-radius: 50px;
+            /* Backing box size */
+            width: 250px;
+            height: 65px;
+            transform-style: preserve-3d;
+            perspective: 800px;
+        }
+
+        /* Layer 1: Cinematic Glow Background */
+        .btn-layer-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            filter: blur(22px);
+            opacity: 0.45;
+            z-index: 1;
+            pointer-events: none;
+            transform: translate3d(0, 0, 0);
+            transition: filter 0.3s ease, opacity 0.3s ease;
+        }
+
+        /* Layer 2: Main Glassmorphic Button Body */
+        .btn-layer-body {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50px;
+            background: linear-gradient(135deg, rgba(20, 21, 45, 0.85) 0%, rgba(8, 9, 24, 0.95) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.4),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            z-index: 2;
+            pointer-events: none;
+            transform: translate3d(0, 0, 0);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .btn-layer-body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+            transform: skewX(-25deg);
+            transition: left 0.6s ease;
+        }
+
+        /* Layer 3: Foreground Content (Text, Icon) */
+        .btn-layer-content {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+            transform: translate3d(0, 0, 10px);
+            pointer-events: none;
+            transition: text-shadow 0.3s ease;
+        }
+
+        .btn-layer-content svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 5px var(--primary-glow));
+            transition: transform 0.3s ease;
+        }
+
+        /* Hover States for Interactive Elements */
+        .magnetic-btn:hover .btn-layer-glow {
+            filter: blur(28px);
+            opacity: 0.85;
+        }
+
+        .magnetic-btn:hover .btn-layer-body {
+            border-color: rgba(0, 242, 254, 0.5);
+            box-shadow: 
+                0 0 30px var(--primary-glow),
+                inset 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .magnetic-btn:hover .btn-layer-body::before {
+            left: 150%;
+            transition: left 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .magnetic-btn:hover .btn-layer-content {
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+        }
+
+        .magnetic-btn:hover .btn-layer-content svg {
+            transform: translateX(4px) rotate(15deg);
+            color: var(--primary);
+        }
+
+        /* ==========================================
+           CUSTOM FLUID CURSOR
+           ========================================== */
+        .cursor-dot {
+            width: 6px;
+            height: 6px;
+            background: #ffffff;
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate3d(-50%, -50%, 0);
+            box-shadow: 0 0 10px #ffffff;
+            transition: width 0.2s, height 0.2s, background-color 0.3s;
+        }
+
+        .cursor-ring {
+            width: 32px;
+            height: 32px;
+            border: 1.5px solid var(--primary);
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate3d(-50%, -50%, 0);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.25), inset 0 0 5px rgba(0, 242, 254, 0.1);
+            backdrop-filter: blur(1px);
+            -webkit-backdrop-filter: blur(1px);
+            will-change: transform, width, height, border-color, background-color;
+        }
+
+        /* Magnetic button proximity cursor feedback */
+        .cursor-ring.near {
+            width: 44px;
+            height: 44px;
+            border-color: var(--secondary);
+            box-shadow: 0 0 20px rgba(155, 81, 224, 0.35);
+        }
+
+        .cursor-ring.locked {
+            width: 254px;
+            height: 70px;
+            border-radius: 50px;
+            border-color: var(--primary);
+            background: rgba(0, 242, 254, 0.03);
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.3);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+
+        .cursor-dot.locked {
+            background-color: var(--primary);
+            width: 10px;
+            height: 10px;
+        }
+
+        /* Toast notification setup */
+        .toast {
+            position: absolute;
+            bottom: 3.5rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(10, 11, 30, 0.85);
+            border: 1px solid var(--primary);
+            padding: 0.8rem 1.6rem;
+            border-radius: 30px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #fff;
+            box-shadow: 0 8px 32px var(--primary-glow);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast::before {
+            content: '●';
+            color: var(--primary);
+            animation: blink 1s linear infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Space Background Canvas -->
+    <canvas id="space-canvas"></canvas>
+
+    <!-- Ambient glowing clouds -->
+    <div class="ambient-glow glow-cyan"></div>
+    <div class="ambient-glow glow-purple"></div>
+    <div class="ambient-glow glow-magenta"></div>
+
+    <!-- Custom Cursor -->
+    <div class="cursor-dot" id="custom-dot"></div>
+    <div class="cursor-ring" id="custom-ring"></div>
+
+    <!-- SCI-FI HUD Overlay -->
+    <div class="hud-overlay">
+        <!-- Header -->
+        <header class="hud-header hud-interactive">
+            <div class="hud-title-wrap">
+                <span class="hud-badge">DEMO</span>
+                <span class="hud-logo">Onyx Labs</span>
+            </div>
+            <div class="hud-system-time" id="system-time">SYSTEM ONLINE // 00:00:00</div>
+        </header>
+
+        <!-- Main Workspace: Panels & Central Button -->
+        <div class="hud-body">
+            
+            <!-- Left Side Panel: Proximity Radar -->
+            <aside class="hud-panel hud-interactive">
+                <div class="hud-panel-title">Gravity Sensor</div>
+                <div class="hud-metric-row">
+                    <span class="hud-metric-label">Mouse X</span>
+                    <span class="hud-metric-value cyan" id="val-mouse-x">0.00</span>
+                </div>
+                <div class="hud-metric-row">
+                    <span class="hud-metric-label">Mouse Y</span>
+                    <span class="hud-metric-value cyan" id="val-mouse-y">0.00</span>
+                </div>
+                <div class="hud-metric-row">
+                    <span class="hud-metric-label">Attraction Radius</span>
+                    <span class="hud-metric-value">160 px</span>
+                </div>
+                <div class="hud-metric-row">
+                    <span class="hud-metric-label">Current Distance</span>
+                    <span class="hud-metric-value pink" id="val-distance">0.00</span>
+                </div>
+                <div class="hud-metric-row">
+                    <span class="hud-metric-label">Attraction Force</span>
+                    <span class="hud-metric-value pink" id="val-pull">0%</span>
+                </div>
+                <!-- Mini animated visual graph -->
+                <div class="system-graph" id="system-bars">
+                    <div class="system-graph-bar"></div>
+                    <div class="system-graph-bar"></div>
+                    <div class="system-graph-bar"></div>
+                    <div class="system-graph-bar"></div>
+                    <div class="system-graph-bar"></div>
+                    <div class="system-graph-bar"></div>
+                    <div class="system-graph-bar"></div>
+                    <div class="system-graph-bar"></div>
+                    <div class="system-graph-bar"></div>
+                    <div class="system-graph-bar"></div>
+                </div>
+            </aside>
+
+            <!-- Floating Character (Stylized Astronaut) -->
+            <div class="character-container">
+                <svg class="astronaut" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Suit Main Shadow -->
+                    <ellipse cx="80" cy="115" rx="55" ry="70" fill="rgba(10, 11, 30, 0.45)" />
+                    <!-- Suit Body -->
+                    <path d="M45 105C45 75 115 75 115 105C115 145 125 180 115 200C110 205 90 200 80 200C70 200 50 205 45 200C35 180 45 145 45 105Z" fill="#E2E8F0" stroke="#94A3B8" stroke-width="3" />
+                    <!-- Back Tank -->
+                    <rect x="25" y="80" width="22" height="90" rx="10" fill="#CBD5E1" stroke="#94A3B8" stroke-width="3" />
+                    <rect x="113" y="80" width="22" height="90" rx="10" fill="#CBD5E1" stroke="#94A3B8" stroke-width="3" />
+                    <!-- Helmet Base / Collar -->
+                    <ellipse cx="80" cy="92" rx="36" ry="12" fill="#94A3B8" />
+                    <!-- Helmet Dome -->
+                    <circle cx="80" cy="80" r="32" fill="#F1F5F9" stroke="#94A3B8" stroke-width="3.5" />
+                    <!-- Helmet Visor Shadow -->
+                    <ellipse cx="80" cy="80" rx="27" ry="21" fill="#0F172A" />
+                    <!-- Visor Glass (Active Purple/Cyan Reflection) -->
+                    <mask id="visor-mask">
+                        <ellipse cx="80" cy="80" rx="25" ry="19" fill="#FFFFFF" />
+                    </mask>
+                    <g mask="url(#visor-mask)">
+                        <!-- Visor Base Gradient -->
+                        <ellipse cx="80" cy="80" rx="25" ry="19" fill="url(#visorGrad)" />
+                        <!-- Proximity-reactive stars reflection -->
+                        <g class="visor-reflection" id="visor-reflection-group">
+                            <circle cx="70" cy="72" r="2" fill="#FFFFFF" opacity="0.8" />
+                            <circle cx="92" cy="88" r="1.5" fill="#FFFFFF" opacity="0.6" />
+                            <circle cx="62" cy="85" r="1" fill="#FFFFFF" opacity="0.5" />
+                            <circle cx="85" cy="70" r="1" fill="#FFFFFF" opacity="0.7" />
+                            <ellipse cx="88" cy="74" rx="6" ry="1.5" fill="var(--primary)" opacity="0.5" transform="rotate(-15 88 74)" />
+                            <!-- Reflection glare highlight -->
+                            <path d="M62 68C72 65 92 68 98 75C88 70 70 68 62 68Z" fill="#FFFFFF" opacity="0.4" />
+                        </g>
+                    </g>
+                    
+                    <!-- Decorative Suit Panels -->
+                    <rect x="62" y="118" width="36" height="26" rx="4" fill="#64748B" stroke="#475569" stroke-width="2" />
+                    <circle cx="71" cy="131" r="4" fill="var(--accent)" />
+                    <circle cx="89" cy="131" r="4" fill="var(--primary)" />
+                    <rect x="79" y="127" width="2" height="8" fill="#CBD5E1" />
+                    <!-- Arms -->
+                    <path d="M46 115C32 125 30 145 38 152C43 156 50 148 48 138" stroke="#94A3B8" stroke-width="12" stroke-linecap="round" fill="none" />
+                    <path d="M114 115C128 125 130 145 122 152C117 156 110 148 112 138" stroke="#94A3B8" stroke-width="12" stroke-linecap="round" fill="none" />
+                    
+                    <!-- SVG Defs / Gradients -->
+                    <defs>
+                        <linearGradient id="visorGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop stop-color="#020617" />
+                            <stop offset="0.5" stop-color="#3b0764" />
+                            <stop offset="1" stop-color="#0891b2" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+
+            <!-- Central Interactive Magnetic Button -->
+            <div class="interactive-center" id="interactive-area">
+                <div class="proximity-visualizer" id="visualizer-circle"></div>
+                
+                <div class="magnetic-btn-wrapper" id="btn-wrapper">
+                    <button class="magnetic-btn hud-interactive" id="action-btn" onclick="executeMissionLaunch()">
+                        <!-- Glow Layer -->
+                        <div class="btn-layer-glow" id="btn-glow"></div>
+                        <!-- Border and Glassmorphic Body -->
+                        <div class="btn-layer-body" id="btn-body"></div>
+                        <!-- Core Text & Icon -->
+                        <div class="btn-layer-content" id="btn-content">
+                            <span>Launch Mission</span>
+                            <svg viewBox="0 0 24 24">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Side Panel: System Metrics -->
+            <aside class="hud-panel hud-interactive">
+                <div class="hud-panel-title">Attraction Vector</div>
+                <div class="hud-metric-row">
+                    <span class="hud-metric-label">Pull X</span>
+                    <span class="hud-metric-value" id="val-pull-x">0 px</span>
+                </div>
+                <div class="hud-metric-row">
+                    <span class="hud-metric-label">Pull Y</span>
+                    <span class="hud-metric-value" id="val-pull-y">0 px</span>
+                </div>
+                <div class="hud-metric-row">
+                    <span class="hud-metric-label">Visual Status</span>
+                    <span class="hud-metric-value cyan" id="val-status">STABLE</span>
+                </div>
+                <div class="hud-metric-row">
+                    <span class="hud-metric-label">FPS Limit</span>
+                    <span class="hud-metric-value">60 (RAF)</span>
+                </div>
+                
+                <div style="font-size: 0.65rem; color: var(--text-muted); line-height: 1.4; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 0.6rem;">
+                    The core engine uses coordinates interpolation (lerping) and offset weights across three independent depth layers.
+                </div>
+            </aside>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="hud-footer">
+            <span>SECURE GRAVITY CALIBRATION UNIT // CRU-882</span>
+            <span>PROXIMITY RADAR: ENABLED</span>
+        </footer>
+    </div>
+
+    <!-- Active Action Toast -->
+    <div class="toast" id="mission-toast">
+        <span>MISSION LAUNCHED! WARP DRIVE INITIATED</span>
+    </div>
+
+    <!-- ==========================================
+       JAVASCRIPT LOGIC
+       ========================================== -->
+    <script>
+        // --- 1. GLOBAL STATE & PARAMETERS ---
+        const state = {
+            mouse: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+            cursor: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+            magnetic: {
+                x: 0, y: 0,
+                glowX: 0, glowY: 0,
+                bodyX: 0, bodyY: 0,
+                textX: 0, textY: 0,
+                targetX: 0, targetY: 0
+            },
+            btnCenter: { x: 0, y: 0 },
+            btnRect: null,
+            isHovered: false,
+            pullStrength: 0.58, // Proportional pull weight
+            triggerRadius: 160 // Distance to begin gravitational pull
+        };
+
+        // DOM elements
+        const customDot = document.getElementById('custom-dot');
+        const customRing = document.getElementById('custom-ring');
+        const actionBtn = document.getElementById('action-btn');
+        const btnWrapper = document.getElementById('btn-wrapper');
+        const interactiveArea = document.getElementById('interactive-area');
+        const visorGroup = document.getElementById('visor-reflection-group');
+        
+        // Buttons Sub-layers
+        const btnGlow = document.getElementById('btn-glow');
+        const btnBody = document.getElementById('btn-body');
+        const btnContent = document.getElementById('btn-content');
+
+        // Metrics HUD display
+        const valMouseX = document.getElementById('val-mouse-x');
+        const valMouseY = document.getElementById('val-mouse-y');
+        const valDistance = document.getElementById('val-distance');
+        const valPull = document.getElementById('val-pull');
+        const valPullX = document.getElementById('val-pull-x');
+        const valPullY = document.getElementById('val-pull-y');
+        const valStatus = document.getElementById('val-status');
+
+        // --- 2. CANVAS STARFIELD ANIMATION ---
+        const canvas = document.getElementById('space-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let stars = [];
+        const STAR_COUNT = 150;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            recalculateButtonCenter();
+        }
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < STAR_COUNT; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5 + 0.25,
+                    opacity: Math.random() * 0.8 + 0.2,
+                    speed: Math.random() * 0.05 + 0.01,
+                    depth: Math.random() * 1.5 + 0.5 // for parallax movement
+                });
+            }
+        }
+
+        function drawStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw planetary/nebula base subtle dots
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            
+            for (let i = 0; i < stars.length; i++) {
+                const s = stars[i];
+                // Subtle drift movement
+                s.y -= s.speed;
+                if (s.y < 0) s.y = canvas.height;
+
+                // Mouse parallax effect: shift stars slightly opposite of cursor movement
+                const mouseDx = (state.mouse.x - canvas.width / 2) * 0.02 * s.depth;
+                const mouseDy = (state.mouse.y - canvas.height / 2) * 0.02 * s.depth;
+
+                let drawX = s.x - mouseDx;
+                let drawY = s.y - mouseDy;
+
+                // Wrap boundaries
+                if (drawX < 0) drawX += canvas.width;
+                if (drawX > canvas.width) drawX -= canvas.width;
+                if (drawY < 0) drawY += canvas.height;
+                if (drawY > canvas.height) drawY -= canvas.height;
+
+                ctx.beginPath();
+                ctx.arc(drawX, drawY, s.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${s.opacity})`;
+                ctx.shadowBlur = s.radius > 1.2 ? 6 : 0;
+                ctx.shadowColor = 'var(--primary)';
+                ctx.fill();
+            }
+            ctx.shadowBlur = 0; // reset
+        }
+
+        // --- 3. PHYSICS & INTERACTIVE MATHS ---
+        function recalculateButtonCenter() {
+            state.btnRect = actionBtn.getBoundingClientRect();
+            state.btnCenter.x = state.btnRect.left + state.btnRect.width / 2;
+            state.btnCenter.y = state.btnRect.top + state.btnRect.height / 2;
+        }
+
+        // Window event listeners
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initStars();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            state.mouse.x = e.clientX;
+            state.mouse.y = e.clientY;
+
+            // Update mouse indicators
+            valMouseX.innerText = state.mouse.x.toFixed(0);
+            valMouseY.innerText = state.mouse.y.toFixed(0);
+        });
+
+        // Track when mouse enters/leaves button hover
+        actionBtn.addEventListener('mouseenter', () => {
+            state.isHovered = true;
+            customRing.classList.add('locked');
+            customDot.classList.add('locked');
+            valStatus.innerText = "GRAV LOCKED";
+            valStatus.style.color = "var(--primary)";
+        });
+
+        actionBtn.addEventListener('mouseleave', () => {
+            state.isHovered = false;
+            customRing.classList.remove('locked');
+            customDot.classList.remove('locked');
+            valStatus.innerText = "ATTRACTED";
+            valStatus.style.color = "var(--secondary)";
+        });
+
+        // Trigger Launch Action
+        function executeMissionLaunch() {
+            const toast = document.getElementById('mission-toast');
+            toast.classList.add('show');
+            
+            // Visual trigger flash
+            actionBtn.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                actionBtn.style.transform = '';
+            }, 150);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Update HUD live panels graphs
+        const graphBars = document.querySelectorAll('.system-graph-bar');
+        function updateGraphMetrics(distanceRatio) {
+            graphBars.forEach((bar, idx) => {
+                // Generate a cool active digital equalizer look that reacts to distance
+                const factor = 1 - distanceRatio; // Closer = higher factor
+                let heightPct = 15 + Math.random() * 25;
+                if (factor > 0) {
+                    heightPct += factor * 60 * (idx / 10 + 0.2);
+                }
+                bar.style.height = `${Math.min(heightPct, 100)}%`;
+                
+                // Colorize based on pull state
+                if (factor > 0.8) {
+                    bar.style.backgroundColor = 'var(--primary)';
+                } else if (factor > 0.2) {
+                    bar.style.backgroundColor = 'var(--secondary)';
+                } else {
+                    bar.style.backgroundColor = 'rgba(0, 242, 254, 0.15)';
+                }
+            });
+        }
+
+        // Update systems clock
+        function updateSystemTime() {
+            const timeEl = document.getElementById('system-time');
+            const now = new Date();
+            const hrs = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            const secs = String(now.getSeconds()).padStart(2, '0');
+            timeEl.innerText = `SYSTEM ONLINE // ${hrs}:${mins}:${secs}`;
+        }
+        setInterval(updateSystemTime, 1000);
+        updateSystemTime();
+
+        // --- 4. MAIN ANIMATION LOOP (requestAnimationFrame) ---
+        function loop() {
+            // -- A. Render canvas background stars --
+            drawStars();
+
+            // -- B. Calculate magnetic coordinates pull --
+            const dx = state.mouse.x - state.btnCenter.x;
+            const dy = state.mouse.y - state.btnCenter.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Output distance metrics to HUD
+            valDistance.innerText = distance.toFixed(0) + " px";
+
+            let pullForcePercent = 0;
+            let currentTargetX = 0;
+            let currentTargetY = 0;
+
+            if (distance < state.triggerRadius) {
+                // User is in proximity: activate states
+                interactiveArea.classList.add('near');
+                customRing.classList.add('near');
+
+                if (state.isHovered) {
+                    // LOCKED STATE: Directly anchor button translations to hover offset limits
+                    pullForcePercent = 100;
+                    currentTargetX = dx * 0.40; 
+                    currentTargetY = dy * 0.40;
+                    interactiveArea.classList.add('attracted');
+                } else {
+                    // PROXIMITY ATTRACT STATE: pull increases as distance decreases
+                    interactiveArea.classList.remove('attracted');
+                    const pullFactor = (state.triggerRadius - distance) / state.triggerRadius; // 0 to 1
+                    pullForcePercent = Math.round(pullFactor * 100);
+                    
+                    // Smooth quadratic easing for attractive entry
+                    const easePull = Math.pow(pullFactor, 1.8);
+                    currentTargetX = dx * easePull * state.pullStrength;
+                    currentTargetY = dy * easePull * state.pullStrength;
+                    valStatus.innerText = "ATTRACTED";
+                    valStatus.style.color = "var(--secondary)";
+                }
+            } else {
+                // Out of gravity range
+                interactiveArea.classList.remove('near');
+                interactiveArea.classList.remove('attracted');
+                customRing.classList.remove('near');
+                valStatus.innerText = "SYSTEM IDLE";
+                valStatus.style.color = "var(--text-muted)";
+            }
+
+            // Update pull metrics to HUD
+            valPull.innerText = pullForcePercent + "%";
+            const distRatio = Math.min(distance / state.triggerRadius, 1);
+            updateGraphMetrics(distRatio);
+
+            // -- C. Lerp (Linear Interpolation) Button Layers separately for a 3D parallax effect --
+            // Each layer has a different stiffness & displacement value for premium volumetric separation
+            
+            // Layer 1: Glow backing (Moves the least, widest offset blur)
+            state.magnetic.glowX += (currentTargetX * 0.55 - state.magnetic.glowX) * 0.12;
+            state.magnetic.glowY += (currentTargetY * 0.55 - state.magnetic.glowY) * 0.12;
+            
+            // Layer 2: Main glass block (Intermediate movement)
+            state.magnetic.bodyX += (currentTargetX * 0.75 - state.magnetic.bodyX) * 0.12;
+            state.magnetic.bodyY += (currentTargetY * 0.75 - state.magnetic.bodyY) * 0.12;
+            
+            // Layer 3: Foreground Content/Text (Moves the most, stands out)
+            state.magnetic.textX += (currentTargetX * 1.05 - state.magnetic.textX) * 0.12;
+            state.magnetic.textY += (currentTargetY * 1.05 - state.magnetic.textY) * 0.12;
+
+            // Apply transforms to button sub-components
+            btnGlow.style.transform = `translate3d(${state.magnetic.glowX}px, ${state.magnetic.glowY}px, 0)`;
+            btnBody.style.transform = `translate3d(${state.magnetic.bodyX}px, ${state.magnetic.bodyY}px, 0)`;
+            btnContent.style.transform = `translate3d(${state.magnetic.textX}px, ${state.magnetic.textY}px, 0px)`;
+
+            // Mirror button body translation numbers in the metrics hud
+            valPullX.innerText = Math.round(state.magnetic.bodyX) + " px";
+            valPullY.innerText = Math.round(state.magnetic.bodyY) + " px";
+
+            // -- D. Lerp Custom Cursor coordinates --
+            // Immediate placement for dot indicator
+            customDot.style.left = `${state.mouse.x}px`;
+            customDot.style.top = `${state.mouse.y}px`;
+
+            if (state.isHovered) {
+                // If hovered, lock outer cursor ring exactly around the button wrapper boundary
+                const wrapRect = btnWrapper.getBoundingClientRect();
+                const targetRingX = wrapRect.left + wrapRect.width / 2;
+                const targetRingY = wrapRect.top + wrapRect.height / 2;
+
+                state.cursor.x += (targetRingX - state.cursor.x) * 0.22;
+                state.cursor.y += (targetRingY - state.cursor.y) * 0.22;
+                
+                customRing.style.left = `${state.cursor.x}px`;
+                customRing.style.top = `${state.cursor.y}px`;
+            } else {
+                // Normal trailing behavior with smooth physics delay (lerp)
+                state.cursor.x += (state.mouse.x - state.cursor.x) * 0.14;
+                state.cursor.y += (state.mouse.y - state.cursor.y) * 0.14;
+
+                customRing.style.left = `${state.cursor.x}px`;
+                customRing.style.top = `${state.cursor.y}px`;
+            }
+
+            // -- E. Astronaut Visor Interactive Parallax --
+            // Shift reflection group slightly based on cursor relative to screen center
+            const screenCenterX = window.innerWidth / 2;
+            const screenCenterY = window.innerHeight / 2;
+            const lookDx = (state.mouse.x - screenCenterX) / screenCenterX * 10; // offset limit: 10px
+            const lookDy = (state.mouse.y - screenCenterY) / screenCenterY * 8;
+            visorGroup.style.transform = `translate3d(${lookDx}px, ${lookDy}px, 0)`;
+
+            requestAnimationFrame(loop);
+        }
+
+        // --- 5. INITIALIZE ---
+        resizeCanvas();
+        initStars();
+        
+        // Start animation loop
+        requestAnimationFrame(loop);
+    </script>
+</body>
+</html>
