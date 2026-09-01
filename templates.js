@@ -33,11 +33,16 @@ function renderCosmicTemplate(data) {
         rollNumber = "CSE-2026-088",
         bio = "An aspiring software engineer seeking to build products that make a difference.",
         skills = "JavaScript, CSS, HTML, Node.js, Python",
-        certificates = "Google UX Design Professional Certificate, AWS Certified Developer"
+        certificates = "Google UX Design Professional Certificate, AWS Certified Developer",
+        avatarBase64 = null
     } = data;
 
     const skillList = skills.split(',').map(s => s.trim()).filter(s => s.length > 0);
     const certList = certificates.split(',').map(c => c.trim()).filter(c => c.length > 0);
+    
+    const avatarHTML = avatarBase64 ? `
+        <img src="${avatarBase64}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2.5px solid var(--primary); box-shadow: 0 0 15px var(--primary-glow); flex-shrink: 0;">
+    ` : '';
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -334,9 +339,14 @@ function renderCosmicTemplate(data) {
     <div class="container">
         <!-- Hero Header -->
         <header class="glass-panel">
-            <span class="role-badge">Student Profile</span>
-            <h1 class="name-title">${name}</h1>
-            <p class="dept-title">${department}</p>
+            <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                ${avatarHTML}
+                <div style="flex-grow: 1;">
+                    <span class="role-badge">Student Profile</span>
+                    <h1 class="name-title">${name}</h1>
+                    <p class="dept-title" style="margin-bottom: 0;">${department}</p>
+                </div>
+            </div>
             <p class="bio-text">${bio}</p>
             
             <div class="meta-grid">
@@ -439,11 +449,16 @@ function renderCyberTemplate(data) {
         rollNumber = "CSE-2026-088",
         bio = "An aspiring software engineer seeking to build products that make a difference.",
         skills = "JavaScript, CSS, HTML, Node.js, Python",
-        certificates = "Google UX Design Professional Certificate, AWS Certified Developer"
+        certificates = "Google UX Design Professional Certificate, AWS Certified Developer",
+        avatarBase64 = null
     } = data;
 
     const skillList = skills.split(',').map(s => s.trim()).filter(s => s.length > 0);
     const certList = certificates.split(',').map(c => c.trim()).filter(c => c.length > 0);
+
+    const avatarHTML = avatarBase64 ? `
+        <img src="${avatarBase64}" style="width: 60px; height: 60px; border-radius: 4px; object-fit: cover; border: 1.5px solid var(--accent); box-shadow: 0 0 10px var(--accent-glow); flex-shrink: 0;">
+    ` : '';
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -656,14 +671,15 @@ function renderCyberTemplate(data) {
     <div class="container">
         <!-- Hero panel -->
         <div class="panel panel-corners">
-            <div class="header-top">
-                <div>
+            <div class="header-top" style="display: flex; align-items: center; gap: 1.5rem;">
+                ${avatarHTML}
+                <div style="flex-grow: 1;">
                     <h1>${name}</h1>
-                    <p class="dept-title">${department}</p>
+                    <p class="dept-title" style="margin-bottom: 0;">${department}</p>
                 </div>
                 <div class="roll-label">${rollNumber}</div>
             </div>
-            <p class="bio-text">// PROFILE SUMMARY:<br>${bio}</p>
+            <p class="bio-text" style="margin-top: 1rem;">// PROFILE SUMMARY:<br>${bio}</p>
         </div>
 
         <!-- Skills Panel -->

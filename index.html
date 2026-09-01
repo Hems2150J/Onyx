@@ -71,35 +71,107 @@
                 <div class="spinner"></div>
                 <p id="authStatusText">Resolving secure OAuth connection...</p>
             </div>
+
+            <!-- MOCK GOOGLE ACCOUNT CHOOSER (Frosted Glass Overlay) -->
+            <div id="googleChooser" class="google-chooser-panel hidden">
+                <div class="chooser-header">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12.24 10.285V13.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.579-7.859-8s3.529-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l2.427-2.334C17.955 2.192 15.34 1 12.24 1 6.033 1 1 6.033 1 12.24s5.033 11.24 11.24 11.24c6.478 0 10.793-4.537 10.793-10.997 0-.746-.08-1.32-.176-1.926H12.24z"/>
+                    </svg>
+                    <h3>Choose an account</h3>
+                    <p>to continue to <span>Onyx Labs</span></p>
+                </div>
+                <div class="chooser-accounts-list">
+                    <div class="chooser-account-item" onclick="selectGoogleAccount('Hems N', 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100')">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" alt="Hems N">
+                        <div class="account-meta">
+                            <span class="account-name">Hems N</span>
+                            <span class="account-email">hems.n@gmail.com</span>
+                        </div>
+                    </div>
+                    <div class="chooser-account-item" onclick="selectGoogleAccount('Alex Mercer', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100')">
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100" alt="Alex Mercer">
+                        <div class="account-meta">
+                            <span class="account-name">Alex Mercer</span>
+                            <span class="account-email">alex.mercer@gmail.com</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chooser-custom-input">
+                    <input type="text" id="customGoogleName" class="form-control" placeholder="Or enter custom name...">
+                    <button class="btn-primary" id="chooserCustomBtn" onclick="selectCustomGoogleAccount()">
+                        <div class="btn-glow-layer" style="filter: blur(8px); opacity: 0.3;"></div>
+                        <div class="btn-body-layer"></div>
+                        <span class="btn-content-layer" style="font-size: 0.75rem; letter-spacing: 1px; height: 35px; width: 100px;">Continue</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- SCREEN 2: CONVERSATIONAL TERMINAL WIZARD -->
-    <div id="screenTerminal" class="screen-wrapper hidden">
-        <div class="terminal-card glass-card">
-            <!-- Header bar -->
-            <div class="terminal-header">
-                <div class="terminal-actions">
-                    <span class="term-dot red"></span>
-                    <span class="term-dot yellow"></span>
-                    <span class="term-dot green"></span>
+    <!-- SCREEN 2: PROMPT SEARCH SCREEN -->
+    <div id="screenPromptSearch" class="screen-wrapper hidden">
+        <!-- Top Right Google Profile Badge -->
+        <div class="google-profile-header">
+            <div class="user-profile-mock">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" alt="Google Avatar" id="googleAvatarImg">
+                <div class="user-info">
+                    <span class="user-name" id="googleNameDisplay">Jane Doe</span>
+                    <span class="user-role">Google Account</span>
                 </div>
-                <div class="terminal-title">Onyx Core Wizard // Build v3.2.1</div>
-                <div style="width: 30px;"></div>
             </div>
-            
-            <!-- CRT Screen Container -->
-            <div class="terminal-screen" id="terminalScreen">
-                <!-- Inside will be populated dynamically -->
+        </div>
+
+        <div class="search-stage">
+            <div class="search-title-wrap">
+                <span class="hud-badge">ONYX PRESET ENGINE</span>
+                <h2>Describe your portfolio or paste your code</h2>
+                <p>Attach your assets directly in the bar to compile a premium site instantly.</p>
             </div>
 
-            <!-- Prompt Form input area -->
-            <form id="terminalPromptForm" class="term-prompt-line" style="padding: 1rem 2rem; border-top: 1px solid var(--glass-border); background: rgba(10, 11, 30, 0.4);">
-                <input type="text" id="terminalInput" class="term-input" autocomplete="off" placeholder="e.g. Jane Doe" disabled>
-                <div class="term-cursor-sim"></div>
-                
-                <button type="submit" id="termSendBtn" style="display: none;"></button>
-            </form>
+            <!-- Cosmic Big Search Bar Container -->
+            <div class="cosmic-search-container glass-card" id="search-card">
+                <div class="search-input-row">
+                    <textarea id="portfolioPrompt" class="prompt-textarea" placeholder="e.g., Generate a space-themed minimalist portfolio for a CS student specializing in AI. Include credentials..."></textarea>
+                    
+                    <!-- Magnetic Generate Button -->
+                    <div class="magnetic-wrap search-submit-wrap">
+                        <button id="generateBtn" class="btn-primary btn-generate-portfolio" onclick="compilePromptPortfolio()">
+                            <div class="btn-glow-layer"></div>
+                            <div class="btn-body-layer"></div>
+                            <div class="btn-content-layer">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Generate</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Attachment controls row inside search bar -->
+                <div class="search-actions-row">
+                    <div class="plus-upload-actions">
+                        <button class="plus-btn" id="plusAvatarBtn" onclick="triggerFileUpload('promptAvatarInput')" title="Add Profile Picture">
+                            <span class="plus-icon">+</span>
+                            <span>Add Photo</span>
+                        </button>
+                        <button class="plus-btn" id="plusCertBtn" onclick="triggerFileUpload('promptCertInput')" title="Add Certificates / Credentials">
+                            <span class="plus-icon">+</span>
+                            <span>Add Credentials</span>
+                        </button>
+                    </div>
+                    
+                    <div class="prompt-text-count" id="promptCharCount">0 characters</div>
+                </div>
+
+                <!-- Hidden inputs -->
+                <input type="file" id="promptAvatarInput" accept="image/*" style="display: none;" onchange="handlePromptFileUploader(event, 'avatar')">
+                <input type="file" id="promptCertInput" accept="image/*" multiple style="display: none;" onchange="handlePromptFileUploader(event, 'cert')">
+            </div>
+
+            <!-- Attachment Previews grid -->
+            <div class="attachment-preview-grid" id="attachmentGrid"></div>
         </div>
     </div>
 

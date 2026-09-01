@@ -21,45 +21,11 @@ const state = {
     // Magnetic Button trackers
     magneticButtons: [],
     
-    // Terminal Wizard Flow
-    currentStep: 0,
-    terminalHistory: [],
-    isTyping: false
+    // Prompt & Upload trackers
+    prompt: "",
+    googleName: "Jane Doe",
+    googleAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100"
 };
-
-// Conversational prompts list
-const terminalPrompts = [
-    {
-        field: "name",
-        prompt: "ACCESS GRANTED. INITIALIZING PROFILE BUILDER...\n\nENTER CREATOR FULL NAME:",
-        placeholder: "e.g., Jane Doe"
-    },
-    {
-        field: "department",
-        prompt: "NAME LOGGED.\n\nENTER ACADEMIC DEPARTMENT / MAJOR:",
-        placeholder: "e.g., Computer Science & Engineering"
-    },
-    {
-        field: "rollNumber",
-        prompt: "DEPARTMENT RECORDED.\n\nENTER STUDENT ID / ROLL NUMBER:",
-        placeholder: "e.g., CSE-2026-088"
-    },
-    {
-        field: "bio",
-        prompt: "ROLL NUMBER INDEXED.\n\nPROVIDE A BRIEF PROFESSIONAL BIO / CREATOR STATEMENT:",
-        placeholder: "A passionate student developer exploring..."
-    },
-    {
-        field: "skills",
-        prompt: "STATEMENT COMPILED.\n\nENTER CORE SKILLS (comma-separated):",
-        placeholder: "HTML, CSS, JavaScript, React, Python"
-    },
-    {
-        field: "certificates",
-        prompt: "SKILLS INDEXED.\n\nENTER VALIDATED CREDENTIALS / CERTIFICATES (comma-separated):",
-        placeholder: "Google UX Professional Certificate, AWS Certified Cloud Practitioner"
-    }
-];
 
 // --- 2. INITIALIZATION ON LOAD ---
 document.addEventListener("DOMContentLoaded", () => {
@@ -222,7 +188,7 @@ function initCursorLoop() {
 // --- 5. MAGNETIC UI INTERACTION ---
 function registerMagneticButtons() {
     // Register buttons by IDs
-    const buttonIds = ["googleLoginBtn", "termSendBtn", "exportBtn"];
+    const buttonIds = ["googleLoginBtn", "generateBtn", "exportBtn", "plusAvatarBtn", "plusCertBtn", "chooserCustomBtn"];
     
     buttonIds.forEach(id => {
         const el = document.getElementById(id);
@@ -249,6 +215,9 @@ function registerMagneticButtons() {
             if (cursorRing) {
                 cursorRing.classList.add("magnet-locked");
                 if (id === "exportBtn") cursorRing.classList.add("magnet-locked-export");
+                if (id === "generateBtn") cursorRing.classList.add("magnet-locked-generate");
+                if (id === "chooserCustomBtn") cursorRing.classList.add("magnet-locked-custom");
+                if (id === "plusAvatarBtn" || id === "plusCertBtn") cursorRing.classList.add("magnet-locked-plus");
             }
             if (cursorDot) cursorDot.classList.add("magnet-locked");
         });
@@ -263,6 +232,9 @@ function registerMagneticButtons() {
             if (cursorRing) {
                 cursorRing.classList.remove("magnet-locked");
                 cursorRing.classList.remove("magnet-locked-export");
+                cursorRing.classList.remove("magnet-locked-generate");
+                cursorRing.classList.remove("magnet-locked-custom");
+                cursorRing.classList.remove("magnet-locked-plus");
             }
             if (cursorDot) cursorDot.classList.remove("magnet-locked");
         });
@@ -323,167 +295,201 @@ function updateMagneticPhysics() {
     });
 }
 
-// --- 6. GOOGLE SIGN IN ACTION ---
+// --- 6. GOOGLE SIGN IN ACTION & ACCOUNT CHOOSER ---
 function triggerGoogleLogin() {
     const btn = document.getElementById("googleLoginBtn");
+    const chooser = document.getElementById("googleChooser");
+
+    if (btn) btn.style.display = "none";
+    if (chooser) chooser.classList.remove("hidden");
+}
+
+function selectGoogleAccount(name, avatarUrl) {
+    const chooser = document.getElementById("googleChooser");
     const loader = document.getElementById("authLoading");
     const statusText = document.getElementById("authStatusText");
 
-    if (btn) btn.style.display = "none";
+    if (chooser) chooser.classList.add("hidden");
     if (loader) loader.classList.remove("hidden");
+
+    state.name = name;
+    state.googleAvatar = avatarUrl;
 
     setTimeout(() => {
         if (statusText) statusText.innerText = "Securing OAuth 2.0 Credentials...";
-    }, 800);
+    }, 600);
 
     setTimeout(() => {
         if (statusText) statusText.innerText = "Establishing encrypted profile gateway...";
-    }, 1800);
+    }, 1200);
 
     setTimeout(() => {
         if (statusText) statusText.innerHTML = "<span style='color: #10b981;'>✔ GATEWAY LOCK RESOLVED</span>";
-    }, 2800);
+    }, 1800);
 
     setTimeout(() => {
-        // Transition to Screen 2: Conversational Terminal
         const screen1 = document.getElementById("screenAuth");
-        const screen2 = document.getElementById("screenTerminal");
+        const screen2 = document.getElementById("screenPromptSearch");
         
         if (screen1) screen1.classList.add("hidden");
         if (screen2) {
             screen2.classList.remove("hidden");
-            // Focus terminal input
-            const input = document.getElementById("terminalInput");
-            if (input) input.focus();
+            // Set Google Display Info
+            document.getElementById("googleNameDisplay").innerText = state.name;
+            document.getElementById("googleAvatarImg").src = state.googleAvatar;
             
-            // Kick off conversational wizard
-            initTerminalWizard();
+            // Focus Prompt Bar
+            const promptArea = document.getElementById("portfolioPrompt");
+            if (promptArea) {
+                promptArea.focus();
+                // Setup key listeners
+                promptArea.addEventListener("input", updatePromptStats);
+            }
         }
-    }, 3600);
+    }, 2400);
 }
 
-// --- 7. CONVERSATIONAL TERMINAL SYSTEM ---
-function initTerminalWizard() {
-    const screen = document.getElementById("terminalScreen");
-    if (!screen) return;
+function selectCustomGoogleAccount() {
+    const input = document.getElementById("customGoogleName");
+    const val = input.value.trim() || "Jane Doe";
+    const defaultAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100";
+    selectGoogleAccount(val, defaultAvatar);
+}
 
-    // Reset wizard
-    state.currentStep = 0;
-    screen.innerHTML = "";
-    
-    // First message print
-    printTerminalLine("SYSTEM STATUS // ONYX PORTAL INITIALIZED SUCCESS", "sys");
-    setTimeout(() => {
-        promptNextStep();
-    }, 800);
+// --- 7. PROMPT SEARCH & FILE ATTACHMENTS SYSTEM ---
+function updatePromptStats() {
+    const promptArea = document.getElementById("portfolioPrompt");
+    const charCount = document.getElementById("promptCharCount");
+    if (promptArea && charCount) {
+        charCount.innerText = `${promptArea.value.length} characters`;
+    }
+}
 
-    // Bind terminal prompt form submit
-    const termForm = document.getElementById("terminalPromptForm");
-    if (termForm) {
-        termForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            handleTerminalSubmit();
-        });
+function triggerFileUpload(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) input.click();
+}
+
+// Store uploaded files data URLs
+state.avatarBase64 = null;
+state.certFiles = []; // array of objects { name: '', dataUrl: '' }
+
+function handlePromptFileUploader(event, type) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            const dataUrl = e.target.result;
+            if (type === "avatar") {
+                state.avatarBase64 = dataUrl;
+                renderAttachmentPills();
+            } else if (type === "cert") {
+                state.certFiles.push({
+                    name: file.name,
+                    dataUrl: dataUrl
+                });
+                renderAttachmentPills();
+            }
+        };
+
+        reader.readAsDataURL(file);
+    }
+}
+
+function renderAttachmentPills() {
+    const grid = document.getElementById("attachmentGrid");
+    if (!grid) return;
+
+    grid.innerHTML = "";
+
+    // Render Avatar Badge
+    if (state.avatarBase64) {
+        const pill = document.createElement("div");
+        pill.className = "attach-pill";
+        pill.innerHTML = `
+            <img src="${state.avatarBase64}" class="attach-thumb">
+            <span>Photo Attached</span>
+            <button class="attach-remove" onclick="removeAttachment('avatar', 0)">×</button>
+        `;
+        grid.appendChild(pill);
     }
 
-    // Keep focus on terminal text box when clicking the screen container
-    screen.addEventListener("click", () => {
-        const input = document.getElementById("terminalInput");
-        if (input) input.focus();
+    // Render Certifications
+    state.certFiles.forEach((cert, idx) => {
+        const pill = document.createElement("div");
+        pill.className = "attach-pill";
+        pill.innerHTML = `
+            <span class="attach-type-icon">📎</span>
+            <span>${cert.name.length > 15 ? cert.name.substring(0, 12) + '...' : cert.name}</span>
+            <button class="attach-remove" onclick="removeAttachment('cert', ${idx})">×</button>
+        `;
+        grid.appendChild(pill);
     });
 }
 
-function printTerminalLine(text, type = "normal") {
-    const screen = document.getElementById("terminalScreen");
-    if (!screen) return;
-
-    const line = document.createElement("div");
-    line.className = `term-log ${type}`;
-    screen.appendChild(line);
-
-    // Typing effect for text line
-    let index = 0;
-    state.isTyping = true;
-    
-    function typeChar() {
-        if (index < text.length) {
-            line.innerHTML += text.charAt(index);
-            index++;
-            screen.scrollTop = screen.scrollHeight;
-            setTimeout(typeChar, 10);
-        } else {
-            state.isTyping = false;
-        }
+function removeAttachment(type, index) {
+    if (type === "avatar") {
+        state.avatarBase64 = null;
+    } else if (type === "cert") {
+        state.certFiles.splice(index, 1);
     }
-    typeChar();
+    renderAttachmentPills();
 }
 
-function promptNextStep() {
-    if (state.currentStep >= terminalPrompts.length) {
-        // End of questions - load Engine Workspace
-        printTerminalLine("\nDATA COMPILING PROCESS RESOLVED...", "success");
-        setTimeout(() => {
-            printTerminalLine("GENERATING SITE METRIC NODES...", "sys");
-        }, 800);
-        
-        setTimeout(() => {
-            printTerminalLine("LAUNCHING LIVE ENGINE CORE...", "success");
-        }, 1800);
+// --- 8. PROMPT PORTFOLIO GENERATION CORE ---
+function compilePromptPortfolio() {
+    const promptArea = document.getElementById("portfolioPrompt");
+    const prompt = promptArea ? promptArea.value.trim() : "";
 
-        setTimeout(() => {
-            transitionToWorkspace();
-        }, 2800);
-        return;
+    // Parse prompt context to customize state properties
+    const promptLower = prompt.toLowerCase();
+    
+    // Default Fallbacks
+    state.department = "Computer Science & Engineering";
+    state.rollNumber = "CSE-" + (200000 + Math.floor(Math.random() * 900000));
+    state.bio = prompt ? `Compiled from Onyx Prompt: "${prompt}"` : "A student creator building cosmic-themed frontends.";
+    state.skills = "JavaScript, CSS, HTML5, React, Node.js";
+    
+    // Customize based on keywords
+    if (promptLower.includes("cyber") || promptLower.includes("matrix") || promptLower.includes("code")) {
+        state.selectedTemplate = "cyber";
+        state.department = "Cybersecurity & Networks";
+        state.skills = "Python, Bash, Linux, Wireshark, Cryptography, JS";
+    } else if (promptLower.includes("ai") || promptLower.includes("artificial") || promptLower.includes("machine")) {
+        state.department = "Artificial Intelligence & Data Science";
+        state.skills = "Python, PyTorch, SQL, Pandas, NumPy, Scikit-Learn";
+    } else if (promptLower.includes("designer") || promptLower.includes("ux") || promptLower.includes("ui")) {
+        state.department = "Human-Computer Interaction & UX Design";
+        state.skills = "Figma, Wireframing, User Research, Prototyping, CSS, HTML5";
     }
 
-    const item = terminalPrompts[state.currentStep];
-    printTerminalLine("\n" + item.prompt, "sys");
-
-    const input = document.getElementById("terminalInput");
-    if (input) {
-        input.value = "";
-        input.placeholder = item.placeholder;
-        input.disabled = false;
-        input.focus();
+    // Attach certificates list from upload names if present
+    if (state.certFiles.length > 0) {
+        state.certificates = state.certFiles.map(c => c.name.replace(/\.[^/.]+$/, "")).join(", ");
+    } else {
+        state.certificates = "Onyx Verification Certificate, Academic Excellence Honor Roll";
     }
-}
 
-function handleTerminalSubmit() {
-    if (state.isTyping) return; // Prevent spamming while text prints
-
-    const input = document.getElementById("terminalInput");
-    if (!input) return;
-
-    const value = input.value.trim();
-    if (!value) return;
-
-    // Log the user's input response in the terminal window
-    printTerminalLine("> " + value, "normal");
-
-    // Save user response to state
-    const field = terminalPrompts[state.currentStep].field;
-    state[field] = value;
-
-    // Disable input while advancing
-    input.disabled = true;
-    
-    // Advance step
-    state.currentStep++;
-    
-    setTimeout(() => {
-        promptNextStep();
-    }, 600);
-}
-
-function transitionToWorkspace() {
-    const screen2 = document.getElementById("screenTerminal");
+    // Transition to Screen 3: Workspace Dashboard
+    const screen2 = document.getElementById("screenPromptSearch");
     const screen3 = document.getElementById("screenWorkspace");
 
     if (screen2) screen2.classList.add("hidden");
     if (screen3) {
         screen3.classList.remove("hidden");
         
-        // Sync terminal entries directly to the editor form sidebar
+        // Update header user profiles with google metadata
+        document.getElementById("userNameHeader").innerText = state.name;
+        if (state.googleAvatar) {
+            const avatarImg = document.querySelector(".user-tag img");
+            if (avatarImg) avatarImg.src = state.googleAvatar;
+        }
+
+        // Sync values to the editor sidebar panels
         document.getElementById("editName").value = state.name;
         document.getElementById("editDept").value = state.department;
         document.getElementById("editRoll").value = state.rollNumber;
@@ -491,7 +497,16 @@ function transitionToWorkspace() {
         document.getElementById("editSkills").value = state.skills;
         document.getElementById("editCert").value = state.certificates;
 
-        // Render preview
+        // Apply active theme indicators
+        const opts = document.querySelectorAll(".theme-opt");
+        opts.forEach(opt => {
+            opt.classList.remove("active");
+            if (opt.getAttribute("onclick").includes(state.selectedTemplate)) {
+                opt.classList.add("active");
+            }
+        });
+
+        // Trigger Live Preview rendering
         updateLivePreview();
     }
 }
