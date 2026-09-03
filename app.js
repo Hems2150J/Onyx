@@ -6,25 +6,29 @@
 // --- 1. APPLICATION STATE ---
 const state = {
     // User Profile
-    name: "Jane Doe",
-    department: "Computer Science & Engineering",
-    rollNumber: "CSE-2026-088",
-    bio: "I am a junior computer science student passionate about artificial intelligence, human-computer interaction, and building responsive frontend experiences.",
-    skills: "JavaScript, HTML/CSS, React, Python, Git",
-    certificates: "Google UX Design Professional Certificate, AWS Certified Developer",
+    name: "N. Hemnath",
+    department: "AIDS",
+    rollNumber: "21222100100",
+    bio: "Artificial Intelligence & Data Science specialist passionate about neural network architectures, high-tech agent systems, and cinematic web experiences.",
+    skills: "Python, PyTorch, TensorFlow, JavaScript, GSAP, Deep Learning, SQL, Computer Vision",
+    certificates: "Google AI Professional Certificate, AWS Machine Learning Specialty, DeepLearning.AI Specialization, Onyx Engineering Honor",
     selectedTemplate: "cosmic",
+    avatarBase64: null,
     
     // UI Mechanics
     mouse: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
     cursor: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
-    
-    // Magnetic Button trackers
     magneticButtons: [],
     
     // Prompt & Upload trackers
     prompt: "",
-    googleName: "Jane Doe",
-    googleAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100"
+    googleName: "N. Hemnath",
+    googleAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100",
+    certFiles: [],
+
+    // History Dashboard State
+    history: [],
+    activeHistoryId: null
 };
 
 // --- 2. INITIALIZATION ON LOAD ---
@@ -44,6 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // E. Initialize Clock
     updateClock();
     setInterval(updateClock, 1000);
+
+    // F. Initialize History Dashboard State & Seed Mock Item
+    initHistoryState();
 });
 
 function updateClock() {
@@ -440,78 +447,250 @@ function removeAttachment(type, index) {
     renderAttachmentPills();
 }
 
-// --- 8. PROMPT PORTFOLIO GENERATION CORE ---
+// --- 8. HISTORY DASHBOARD & STATE MANAGEMENT ---
+function initHistoryState() {
+    try {
+        const saved = localStorage.getItem("onyx_portfolio_history");
+        if (saved) {
+            state.history = JSON.parse(saved);
+        }
+    } catch (e) {
+        console.warn("Could not parse localStorage history:", e);
+    }
+
+    // Pre-populate mock history item if history is empty
+    if (!state.history || state.history.length === 0) {
+        const mockUserData = {
+            name: "N. Hemnath",
+            department: "AIDS",
+            rollNumber: "21222100100",
+            bio: "Artificial Intelligence & Data Science specialist passionate about neural network architectures, high-tech agent systems, and cinematic web experiences.",
+            skills: "Python, PyTorch, TensorFlow, JavaScript, GSAP, Deep Learning, SQL, Computer Vision",
+            certificates: "Google AI Professional Certificate, AWS Machine Learning Specialty, DeepLearning.AI Specialization, Onyx Engineering Honor",
+            prompt: "High-Tech AI & Data Science Cosmic Portfolio with GSAP animations",
+            selectedTemplate: "cosmic"
+        };
+
+        const mockHtml = typeof generateCosmicPortfolio === "function" 
+            ? generateCosmicPortfolio(mockUserData) 
+            : (typeof buildPortfolioHTML === "function" ? buildPortfolioHTML(mockUserData) : "");
+
+        const mockItem = {
+            id: "hemnath-aids-mock",
+            date: "Sep 03, 2026 • 23:08",
+            name: "N. Hemnath",
+            department: "AIDS",
+            prompt: "High-Tech AI & Data Science Cosmic Portfolio with GSAP animations",
+            html: mockHtml,
+            userData: mockUserData
+        };
+
+        state.history = [mockItem];
+        saveHistoryToLocalStorage();
+    }
+
+    renderHistorySidebar();
+    if (state.history.length > 0) {
+        selectHistoryItem(state.history[0].id, false);
+    }
+}
+
+function saveHistoryToLocalStorage() {
+    try {
+        localStorage.setItem("onyx_portfolio_history", JSON.stringify(state.history));
+    } catch (e) {
+        console.warn("Failed to write to localStorage:", e);
+    }
+}
+
+function renderHistorySidebar(filterText = "") {
+    const listContainer = document.getElementById("historyList");
+    const countBadge = document.getElementById("historyCountBadge");
+    if (!listContainer) return;
+
+    listContainer.innerHTML = "";
+
+    const query = (filterText || "").trim().toLowerCase();
+    const filtered = state.history.filter(item => {
+        if (!query) return true;
+        return (item.name && item.name.toLowerCase().includes(query)) ||
+               (item.department && item.department.toLowerCase().includes(query)) ||
+               (item.prompt && item.prompt.toLowerCase().includes(query));
+    });
+
+    if (countBadge) {
+        countBadge.innerText = `${filtered.length} Saved`;
+    }
+
+    if (filtered.length === 0) {
+        listContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 0.8rem; font-family: var(--font-mono); text-align: center; padding: 2rem 0;">No matching portfolios found</div>`;
+        return;
+    }
+
+    filtered.forEach(item => {
+        const card = document.createElement("div");
+        card.className = `history-item-card ${item.id === state.activeHistoryId ? 'active' : ''}`;
+        card.onclick = () => selectHistoryItem(item.id, true);
+
+        card.innerHTML = `
+            <div class="history-card-top">
+                <span class="history-card-name">${item.name || 'Untitled'}</span>
+                <span class="history-dept-badge">${item.department || 'GENERAL'}</span>
+            </div>
+            <div class="history-prompt-snippet">${item.prompt || 'Cosmic Portfolio'}</div>
+            <div class="history-card-date">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                <span>${item.date}</span>
+            </div>
+        `;
+
+        listContainer.appendChild(card);
+    });
+}
+
+function selectHistoryItem(id, animate = true) {
+    const item = state.history.find(h => h.id === id);
+    if (!item) return;
+
+    state.activeHistoryId = id;
+
+    // Update active highlight classes in history sidebar
+    renderHistorySidebar(document.getElementById("historySearchInput")?.value || "");
+
+    // Populate editor fields with selected item's userData
+    if (item.userData) {
+        Object.assign(state, item.userData);
+        if (document.getElementById("editName")) document.getElementById("editName").value = item.userData.name || "";
+        if (document.getElementById("editDept")) document.getElementById("editDept").value = item.userData.department || "";
+        if (document.getElementById("editRoll")) document.getElementById("editRoll").value = item.userData.rollNumber || "";
+        if (document.getElementById("editBio")) document.getElementById("editBio").value = item.userData.bio || "";
+        if (document.getElementById("editSkills")) document.getElementById("editSkills").value = item.userData.skills || "";
+        if (document.getElementById("editCert")) document.getElementById("editCert").value = item.userData.certificates || "";
+    }
+
+    // Update header preview text
+    const badgeText = document.getElementById("previewBadgeText");
+    if (badgeText) {
+        badgeText.innerText = `Live Core Matrix: ${item.name} (${item.department})`;
+    }
+
+    // GSAP smooth transition animation on preview frame
+    const iframeWrapper = document.getElementById("previewIframeWrapper");
+    if (iframeWrapper && typeof gsap !== "undefined" && animate) {
+        gsap.fromTo(iframeWrapper,
+            { opacity: 0, y: 15, scale: 0.99 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "power2.out" }
+        );
+    }
+
+    // Render live HTML string inside preview iframe
+    const iframe = document.getElementById("previewIframe");
+    if (iframe) {
+        iframe.srcdoc = item.html;
+    }
+}
+
+function filterHistoryList(val) {
+    renderHistorySidebar(val);
+}
+
+function openPromptSearchScreen() {
+    const screen1 = document.getElementById("screenAuth");
+    const screen2 = document.getElementById("screenPromptSearch");
+    const screen3 = document.getElementById("screenWorkspace");
+
+    if (screen1) screen1.classList.add("hidden");
+    if (screen3) screen3.classList.add("hidden");
+    if (screen2) screen2.classList.remove("hidden");
+}
+
+function toggleEditorDrawer() {
+    const drawer = document.getElementById("editorDrawer");
+    if (!drawer) return;
+
+    drawer.classList.toggle("hidden");
+    if (!drawer.classList.contains("hidden")) {
+        if (typeof gsap !== "undefined") {
+            gsap.fromTo(drawer,
+                { opacity: 0, y: -10 },
+                { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }
+            );
+        }
+    }
+}
+
+// --- 9. PROMPT PORTFOLIO GENERATION CORE ---
 function compilePromptPortfolio() {
     const promptArea = document.getElementById("portfolioPrompt");
     const prompt = promptArea ? promptArea.value.trim() : "";
-
-    // Parse prompt context to customize state properties
     const promptLower = prompt.toLowerCase();
     
-    // Default Fallbacks
-    state.department = "Computer Science & Engineering";
-    state.rollNumber = "CSE-" + (200000 + Math.floor(Math.random() * 900000));
-    state.bio = prompt ? `Compiled from Onyx Prompt: "${prompt}"` : "A student creator building cosmic-themed frontends.";
-    state.skills = "JavaScript, CSS, HTML5, React, Node.js";
+    // Customize state values based on prompt
+    state.name = state.googleName || "N. Hemnath";
+    state.department = "AIDS";
+    state.rollNumber = "212221" + Math.floor(10000 + Math.random() * 90000);
+    state.bio = prompt ? `Compiled from Onyx Prompt: "${prompt}"` : "Artificial Intelligence & Data Science specialist building high-performance cosmic web applications.";
+    state.skills = "Python, PyTorch, TensorFlow, JavaScript, GSAP, Deep Learning, SQL, Computer Vision";
     
-    // Customize based on keywords
-    if (promptLower.includes("cyber") || promptLower.includes("matrix") || promptLower.includes("code")) {
-        state.selectedTemplate = "cyber";
+    if (promptLower.includes("cyber") || promptLower.includes("security")) {
         state.department = "Cybersecurity & Networks";
-        state.skills = "Python, Bash, Linux, Wireshark, Cryptography, JS";
-    } else if (promptLower.includes("ai") || promptLower.includes("artificial") || promptLower.includes("machine")) {
-        state.department = "Artificial Intelligence & Data Science";
-        state.skills = "Python, PyTorch, SQL, Pandas, NumPy, Scikit-Learn";
-    } else if (promptLower.includes("designer") || promptLower.includes("ux") || promptLower.includes("ui")) {
-        state.department = "Human-Computer Interaction & UX Design";
-        state.skills = "Figma, Wireframing, User Research, Prototyping, CSS, HTML5";
+        state.skills = "Python, Linux, Wireshark, Cryptography, JS, Bash";
+    } else if (promptLower.includes("ui") || promptLower.includes("ux") || promptLower.includes("designer")) {
+        state.department = "HCI & UX Design";
+        state.skills = "Figma, Wireframing, CSS, HTML5, User Research, JS";
     }
 
-    // Attach certificates list from upload names if present
     if (state.certFiles.length > 0) {
         state.certificates = state.certFiles.map(c => c.name.replace(/\.[^/.]+$/, "")).join(", ");
     } else {
-        state.certificates = "Onyx Verification Certificate, Academic Excellence Honor Roll";
+        state.certificates = "Google AI Professional Certificate, AWS Machine Learning Specialty, DeepLearning.AI Specialization";
     }
+
+    const userDataCopy = {
+        name: state.name,
+        department: state.department,
+        rollNumber: state.rollNumber,
+        bio: state.bio,
+        skills: state.skills,
+        certificates: state.certificates,
+        avatarBase64: state.avatarBase64,
+        prompt: prompt || "Custom Cosmic Portfolio Compilation"
+    };
+
+    const compiledHTML = typeof generateCosmicPortfolio === "function"
+        ? generateCosmicPortfolio(userDataCopy)
+        : (typeof buildPortfolioHTML === "function" ? buildPortfolioHTML(userDataCopy) : "");
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) + 
+                    " • " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const newItem = {
+        id: "item-" + Date.now(),
+        date: dateStr,
+        name: userDataCopy.name,
+        department: userDataCopy.department,
+        prompt: userDataCopy.prompt,
+        html: compiledHTML,
+        userData: userDataCopy
+    };
+
+    // Save to history list
+    state.history.unshift(newItem);
+    saveHistoryToLocalStorage();
 
     // Transition to Screen 3: Workspace Dashboard
     const screen2 = document.getElementById("screenPromptSearch");
     const screen3 = document.getElementById("screenWorkspace");
 
     if (screen2) screen2.classList.add("hidden");
-    if (screen3) {
-        screen3.classList.remove("hidden");
-        
-        // Update header user profiles with google metadata
-        document.getElementById("userNameHeader").innerText = state.name;
-        if (state.googleAvatar) {
-            const avatarImg = document.querySelector(".user-tag img");
-            if (avatarImg) avatarImg.src = state.googleAvatar;
-        }
+    if (screen3) screen3.classList.remove("hidden");
 
-        // Sync values to the editor sidebar panels
-        document.getElementById("editName").value = state.name;
-        document.getElementById("editDept").value = state.department;
-        document.getElementById("editRoll").value = state.rollNumber;
-        document.getElementById("editBio").value = state.bio;
-        document.getElementById("editSkills").value = state.skills;
-        document.getElementById("editCert").value = state.certificates;
-
-        // Apply active theme indicators
-        const opts = document.querySelectorAll(".theme-opt");
-        opts.forEach(opt => {
-            opt.classList.remove("active");
-            if (opt.getAttribute("onclick").includes(state.selectedTemplate)) {
-                opt.classList.add("active");
-            }
-        });
-
-        // Trigger Live Preview rendering
-        updateLivePreview();
-    }
+    selectHistoryItem(newItem.id, true);
+    showToast("HIGH-TECH GSAP PORTFOLIO GENERATED & SAVED!");
 }
 
-// --- 8. EDITOR SIDEBAR PANEL SYNCS ---
+// --- 10. EDITOR SIDEBAR PANEL SYNCS ---
 function bindEditorFields() {
     const inputs = ["editName", "editDept", "editRoll", "editBio", "editSkills", "editCert"];
     
@@ -521,51 +700,61 @@ function bindEditorFields() {
 
         el.addEventListener("input", (e) => {
             const field = id.replace("edit", "").toLowerCase();
-            // Mapping special fields manually
             let stateField = field;
             if (field === "dept") stateField = "department";
             if (field === "roll") stateField = "rollNumber";
             if (field === "cert") stateField = "certificates";
 
             state[stateField] = e.target.value;
-            
-            // Re-render live preview IFrame
-            updateLivePreview();
+
+            // Regenerate HTML for current active item
+            if (state.activeHistoryId) {
+                const activeItem = state.history.find(h => h.id === state.activeHistoryId);
+                if (activeItem) {
+                    activeItem.name = state.name;
+                    activeItem.department = state.department;
+                    if (!activeItem.userData) activeItem.userData = {};
+                    activeItem.userData[stateField] = e.target.value;
+
+                    const updatedHTML = typeof generateCosmicPortfolio === "function" 
+                        ? generateCosmicPortfolio(activeItem.userData)
+                        : buildPortfolioHTML(state);
+
+                    activeItem.html = updatedHTML;
+                    saveHistoryToLocalStorage();
+
+                    const iframe = document.getElementById("previewIframe");
+                    if (iframe) iframe.srcdoc = updatedHTML;
+
+                    renderHistorySidebar(document.getElementById("historySearchInput")?.value || "");
+                }
+            }
         });
     });
 }
 
 function selectTheme(themeKey) {
     state.selectedTemplate = themeKey;
-    
-    // Update active visual tags
-    const opts = document.querySelectorAll(".theme-opt");
-    opts.forEach(opt => {
-        opt.classList.remove("active");
-        if (opt.getAttribute("onclick").includes(themeKey)) {
-            opt.classList.add("active");
-        }
-    });
-
     updateLivePreview();
 }
 
-// --- 9. REAL-TIME PREVIEW GENERATION ---
 function updateLivePreview() {
     const iframe = document.getElementById("previewIframe");
     if (!iframe) return;
 
-    // Use builder functions inside templates.js
-    if (typeof buildPortfolioHTML === "function") {
-        const compiledHTML = buildPortfolioHTML(state);
-        iframe.srcdoc = compiledHTML;
-    }
+    const compiledHTML = typeof generateCosmicPortfolio === "function"
+        ? generateCosmicPortfolio(state)
+        : buildPortfolioHTML(state);
+
+    iframe.srcdoc = compiledHTML;
 }
 
-// --- 10. NATIVE FILE SYSTEM DIRECTORY ACCESS API EXPORTER ---
+// --- 11. NATIVE FILE SYSTEM DIRECTORY ACCESS API EXPORTER ---
 async function exportPortfolio() {
-    // Generate compiled code
-    const portfolioContent = buildPortfolioHTML(state);
+    const activeItem = state.history.find(h => h.id === state.activeHistoryId);
+    const portfolioContent = activeItem 
+        ? activeItem.html 
+        : (typeof generateCosmicPortfolio === "function" ? generateCosmicPortfolio(state) : buildPortfolioHTML(state));
 
     // Try modern directory picker API first
     if ('showDirectoryPicker' in window) {
@@ -576,7 +765,7 @@ async function exportPortfolio() {
             // Create index.html file handle
             const fileHandle = await dirHandle.getFileHandle('index.html', { create: true });
             
-            // Request permissions write access stream
+            // Request write access stream
             const writable = await fileHandle.createWritable();
             
             // Write string content
@@ -589,14 +778,12 @@ async function exportPortfolio() {
             showToast("PORTFOLIO index.html WRITTEN TO LOCAL FOLDER!");
         } catch (err) {
             console.error("Directory Picker Error/Canceled: ", err);
-            // Handle User Cancelation vs API write failure
             if (err.name !== 'AbortError') {
-                // Trigger fallback download
                 triggerBlobDownload(portfolioContent);
             }
         }
     } else {
-        // Fallback: browser does not support Directory Picker API (e.g. Firefox/Safari)
+        // Fallback: browser does not support Directory Picker API
         triggerBlobDownload(portfolioContent);
     }
 }
