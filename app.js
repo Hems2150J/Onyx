@@ -195,7 +195,7 @@ function initCursorLoop() {
 // --- 5. MAGNETIC UI INTERACTION ---
 function registerMagneticButtons() {
     // Register buttons by IDs
-    const buttonIds = ["googleLoginBtn", "generateBtn", "exportBtn", "plusAvatarBtn", "plusCertBtn", "chooserCustomBtn"];
+    const buttonIds = ["googleLoginBtn", "githubLoginBtn", "githubPushBtn", "generateBtn", "exportBtn", "plusAvatarBtn", "plusCertBtn", "chooserCustomBtn"];
     
     buttonIds.forEach(id => {
         const el = document.getElementById(id);
@@ -799,6 +799,139 @@ function triggerBlobDownload(content) {
     document.body.removeChild(link);
     
     showToast("ONYX COMPILATION DOWNLOADED VIA WEB BLOB STREAM");
+}
+
+// --- 12. GITHUB REST API AUTOMATED REPOSITORY & DEPLOYMENT PROTOCOL ---
+async function pushToGitHub(htmlString, userAccessToken) {
+    let token = userAccessToken || state.githubToken;
+
+    if (!token) {
+        token = prompt("Enter GitHub Access Token (with 'repo' scope to push to 'onyx-portfolio'):");
+        if (!token) {
+            showToast("GITHUB PUSH CANCELLED: OAUTH TOKEN REQUIRED");
+            return;
+        }
+        state.githubToken = token;
+    }
+
+    const pushBtnText = document.getElementById("githubPushBtnText");
+    if (pushBtnText) pushBtnText.innerText = "Authenticating...";
+
+    try {
+        // 1. Fetch authenticated user details
+        const userRes = await fetch("https://api.github.com/user", {
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/vnd.github.v3+json"
+            }
+        });
+
+        if (!userRes.ok) {
+            throw new Error(`Authentication Failed (${userRes.status}): Ensure token has 'repo' scope`);
+        }
+
+        const userData = await userRes.json();
+        const username = userData.login;
+        const repoName = "onyx-portfolio";
+
+        if (pushBtnText) pushBtnText.innerText = "Creating Repo...";
+
+        // 2. Create public repo if it doesn't already exist
+        const createRepoRes = await fetch("https://api.github.com/user/repos", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/vnd.github.v3+json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: repoName,
+                description: "High-Tech Cosmic Modular Portfolio compiled via Onyx Engine",
+                private: false,
+                auto_init: true
+            })
+        });
+
+        if (createRepoRes.status !== 201 && createRepoRes.status !== 422) {
+            const errJson = await createRepoRes.json();
+            console.warn("Repo creation note:", createRepoRes.status, errJson);
+        }
+
+        if (pushBtnText) pushBtnText.innerText = "Checking SHA...";
+
+        // 3. Check for existing index.html file to retrieve SHA
+        let existingSha = null;
+        try {
+            const checkRes = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/index.html`, {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Accept": "application/vnd.github.v3+json"
+                }
+            });
+            if (checkRes.ok) {
+                const checkData = await checkRes.json();
+                existingSha = checkData.sha;
+            }
+        } catch (e) {
+            console.log("No existing file, creating fresh commit.");
+        }
+
+        if (pushBtnText) pushBtnText.innerText = "Uploading HTML...";
+
+        // 4. Safely Base64 encode the HTML string
+        const encodedContent = btoa(unescape(encodeURIComponent(htmlString)));
+
+        const payload = {
+            message: "Deploy Onyx High-Tech Cosmic Portfolio",
+            content: encodedContent,
+            branch: "main"
+        };
+        if (existingSha) payload.sha = existingSha;
+
+        // 5. Commit index.html to repository
+        const putRes = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/index.html`, {
+            method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/vnd.github.v3+json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!putRes.ok) {
+            const putErr = await putRes.json();
+            throw new Error(putErr.message || "Failed to commit index.html");
+        }
+
+        const putData = await putRes.json();
+        const repoUrl = `https://github.com/${username}/${repoName}`;
+
+        if (pushBtnText) pushBtnText.innerText = "Pushed!";
+        showToast(`DEPLOYED TO GITHUB: ${username}/${repoName}`);
+        console.log("GitHub Deployment Successful:", repoUrl, putData);
+
+        setTimeout(() => {
+            if (pushBtnText) pushBtnText.innerText = "Push to GitHub";
+        }, 4000);
+
+    } catch (err) {
+        console.error("GitHub Push Error:", err);
+        showToast(`GITHUB ERROR: ${err.message}`);
+        if (pushBtnText) pushBtnText.innerText = "Push Failed";
+        setTimeout(() => {
+            if (pushBtnText) pushBtnText.innerText = "Push to GitHub";
+        }, 4000);
+    }
+}
+
+function handlePushToGitHubClick() {
+    const activeItem = state.history.find(h => h.id === state.activeHistoryId);
+    const htmlContent = activeItem 
+        ? activeItem.html 
+        : (typeof generateCosmicPortfolio === "function" ? generateCosmicPortfolio(state) : buildPortfolioHTML(state));
+
+    pushToGitHub(htmlContent, state.githubToken);
 }
 
 function showToast(message) {

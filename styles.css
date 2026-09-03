@@ -806,13 +806,74 @@ header.workspace-header {
 }
 
 .btn-export-magnetic {
-    width: 200px;
+    width: 190px;
     height: 48px;
     font-size: 0.8rem;
 }
 
 .btn-export-magnetic .btn-glow-layer {
     filter: blur(12px);
+}
+
+/* GitHub Push & Auth Magnetic Buttons */
+.btn-github-magnetic {
+    width: 180px;
+    height: 48px;
+    font-size: 0.8rem;
+}
+
+.btn-github-magnetic .btn-body-layer {
+    background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+    border: 1px solid rgba(155, 81, 224, 0.4);
+}
+
+.btn-github-magnetic .btn-glow-layer {
+    background: var(--secondary);
+    filter: blur(12px);
+    opacity: 0.35;
+}
+
+/* Deep Frosted Glass Auth Card Overhaul */
+.auth-card-overhaul {
+    background: rgba(14, 11, 35, 0.75) !important;
+    backdrop-filter: blur(28px) !important;
+    -webkit-backdrop-filter: blur(28px) !important;
+    border: 1px solid rgba(155, 81, 224, 0.3) !important;
+    border-radius: 24px !important;
+    padding: 3rem 2.5rem !important;
+    max-width: 440px !important;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.7),
+        0 0 40px rgba(155, 81, 224, 0.15),
+        inset 0 1px 1px rgba(255, 255, 255, 0.15) !important;
+}
+
+.auth-actions-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.btn-google-auth, .btn-github-auth {
+    width: 100%;
+    height: 52px;
+    border-radius: 14px;
+}
+
+.btn-github-auth .btn-body-layer {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-github-auth:hover .btn-body-layer {
+    border-color: var(--secondary);
+}
+
+.btn-github-auth .btn-glow-layer {
+    background: var(--secondary);
+    filter: blur(14px);
+    opacity: 0.3;
 }
 
 .user-tag {

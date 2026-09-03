@@ -30,18 +30,18 @@ function generateCosmicPortfolio(userData = {}) {
         department = "AIDS",
         rollNumber = "21222100100",
         bio = "Artificial Intelligence & Data Science specialist passionate about neural network architectures, high-tech agent systems, and cinematic web experiences.",
-        skills = "Python, PyTorch, TensorFlow, JavaScript, GSAP, Deep Learning, SQL, Computer Vision",
+        skills = "Python, PyTorch, TensorFlow, JavaScript, GSAP, Three.js, Deep Learning, SQL, Computer Vision",
         certificates = "Google AI Professional Certificate, AWS Machine Learning Specialty, DeepLearning.AI Specialization, Onyx Engineering Honor",
         avatarBase64 = null
     } = userData;
 
     const skillList = typeof skills === 'string' 
         ? skills.split(',').map(s => s.trim()).filter(Boolean)
-        : (Array.isArray(skills) ? skills : []);
+        : (Array.isArray(skills) ? skills : ["Python", "PyTorch", "TensorFlow", "JavaScript", "GSAP", "Three.js", "Deep Learning", "SQL"]);
 
     const certList = typeof certificates === 'string'
         ? certificates.split(',').map(c => c.trim()).filter(Boolean)
-        : (Array.isArray(certificates) ? certificates : []);
+        : (Array.isArray(certificates) ? certificates : ["Google AI Professional Certificate", "AWS Machine Learning Specialty", "DeepLearning.AI Specialization"]);
 
     const avatarMarkup = avatarBase64 ? `
         <div class="avatar-glow-ring">
@@ -60,29 +60,30 @@ function generateCosmicPortfolio(userData = {}) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${name} | Onyx Cosmic Matrix</title>
+    <title>${name} | Onyx Modular Cosmic Engine</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- GSAP (GreenSock) & ScrollTrigger CDNs -->
+    <!-- GSAP, ScrollTrigger & Three.js CDNs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <style>
         :root {
-            --bg-dark: #02040a;
+            --bg-dark: #02030a;
             --primary: #00f2fe;
             --primary-glow: rgba(0, 242, 254, 0.4);
             --secondary: #9b51e0;
-            --secondary-glow: rgba(155, 81, 224, 0.4);
+            --secondary-glow: rgba(155, 81, 224, 0.45);
             --accent: #ff007f;
-            --accent-glow: rgba(255, 0, 127, 0.4);
+            --accent-glow: rgba(255, 0, 127, 0.45);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --glass-bg: rgba(13, 17, 38, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-bg: rgba(12, 14, 33, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.09);
             --font-sans: 'Plus Jakarta Sans', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
         }
@@ -106,8 +107,8 @@ function generateCosmicPortfolio(userData = {}) {
             min-height: 100vh;
         }
 
-        /* 3D Cinematic Starfield Canvas */
-        #space-canvas {
+        /* 3D WebGL Three.js Particle Canvas Background */
+        #webgl-canvas {
             position: fixed;
             top: 0;
             left: 0;
@@ -117,65 +118,65 @@ function generateCosmicPortfolio(userData = {}) {
             pointer-events: none;
         }
 
-        /* Movie-Quality Lighting & Aurora Nebulae */
-        .aurora-sphere {
+        /* Movie-Quality Deep Purple Ambient Lighting Spheres */
+        .ambient-aurora {
             position: fixed;
             border-radius: 50%;
             pointer-events: none;
             filter: blur(140px);
-            opacity: 0.4;
+            opacity: 0.45;
             z-index: 1;
             mix-blend-mode: screen;
             will-change: transform;
-            animation: auroraFloat 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+            animation: auroraMotion 22s infinite alternate ease-in-out;
         }
 
-        .aurora-1 {
-            width: 60vw;
-            height: 60vw;
-            background: radial-gradient(circle, var(--primary) 0%, rgba(2, 4, 10, 0) 70%);
-            top: -20vh;
+        .aurora-purple {
+            width: 65vw;
+            height: 65vw;
+            background: radial-gradient(circle, #6b21a8 0%, rgba(2, 3, 10, 0) 70%);
+            top: -25vh;
             left: -15vw;
         }
 
-        .aurora-2 {
+        .aurora-cyan {
             width: 50vw;
             height: 50vw;
-            background: radial-gradient(circle, var(--secondary) 0%, rgba(2, 4, 10, 0) 70%);
+            background: radial-gradient(circle, var(--primary) 0%, rgba(2, 3, 10, 0) 70%);
             bottom: -15vh;
             right: -10vw;
-            animation-delay: -7s;
+            animation-delay: -8s;
         }
 
-        .aurora-3 {
-            width: 40vw;
-            height: 40vw;
-            background: radial-gradient(circle, var(--accent) 0%, rgba(2, 4, 10, 0) 70%);
-            top: 40vh;
-            left: 30vw;
-            animation-delay: -12s;
-            opacity: 0.25;
+        .aurora-pink {
+            width: 45vw;
+            height: 45vw;
+            background: radial-gradient(circle, var(--accent) 0%, rgba(2, 3, 10, 0) 70%);
+            top: 45vh;
+            left: 25vw;
+            opacity: 0.3;
+            animation-delay: -14s;
         }
 
-        @keyframes auroraFloat {
+        @keyframes auroraMotion {
             0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(-4%, 5%) scale(1.08); }
+            100% { transform: translate(-3%, 4%) scale(1.08); }
         }
 
-        /* Top Navigation Header Bar */
+        /* Top Navigation Header */
         .cosmic-nav {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             z-index: 100;
-            padding: 1.25rem 2rem;
+            padding: 1.2rem 2.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(2, 4, 10, 0.4);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(2, 3, 10, 0.5);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .nav-brand {
@@ -191,11 +192,11 @@ function generateCosmicPortfolio(userData = {}) {
         }
 
         .nav-brand-dot {
-            width: 8px;
-            height: 8px;
+            width: 9px;
+            height: 9px;
             border-radius: 50%;
             background: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
+            box-shadow: 0 0 12px var(--primary);
         }
 
         .nav-links {
@@ -218,19 +219,19 @@ function generateCosmicPortfolio(userData = {}) {
             color: var(--primary);
         }
 
-        /* Main Content Container */
-        .main-wrapper {
+        /* Main Container Stage */
+        .main-stage {
             position: relative;
             z-index: 10;
             max-width: 1100px;
             margin: 0 auto;
-            padding: 7rem 2rem 4rem;
+            padding: 7rem 2rem 5rem;
             display: flex;
             flex-direction: column;
             gap: 6rem;
         }
 
-        /* Frosted Glass Container Base */
+        /* Base Frosted Glass Panel */
         .glass-panel {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
@@ -238,9 +239,7 @@ function generateCosmicPortfolio(userData = {}) {
             padding: 3rem;
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            box-shadow: 
-                0 16px 40px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
         }
@@ -252,81 +251,105 @@ function generateCosmicPortfolio(userData = {}) {
             left: 0;
             width: 100%;
             height: 2px;
-            background: linear-gradient(90deg, var(--primary), var(--secondary), transparent);
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent), transparent);
         }
 
-        /* Section Title Header */
-        .section-header {
-            margin-bottom: 2.5rem;
-        }
-
-        .section-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 0.75rem;
-            background: rgba(0, 242, 254, 0.08);
-            border: 1px solid rgba(0, 242, 254, 0.2);
-            padding: 0.35rem 0.9rem;
-            border-radius: 20px;
-        }
-
-        .section-title {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* SECTION 1: HERO */
-        #hero {
-            min-height: calc(85vh - 7rem);
+        /* ====================================================
+           MODULE A: THE BLACK HOLE (Hero Section)
+           ==================================================== */
+        .blackhole-hero-stage {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            padding: 2rem 1rem;
+        }
+
+        /* Singularity Core Element */
+        .blackhole-viewport {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
             justify-content: center;
         }
 
-        .hero-grid {
-            display: grid;
-            grid-template-columns: 1fr 240px;
-            gap: 3rem;
-            align-items: center;
+        .singularity-core {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: #000000;
+            box-shadow: 
+                0 0 30px #9b51e0,
+                0 0 70px #00f2fe,
+                0 0 120px rgba(255, 0, 127, 0.6),
+                inset 0 0 25px rgba(155, 81, 224, 0.9);
+            position: relative;
+            z-index: 5;
+            animation: singularityPulse 4s ease-in-out infinite alternate;
         }
 
-        @media (max-width: 868px) {
-            .hero-grid {
-                grid-template-columns: 1fr;
-            }
+        .accretion-disk {
+            position: absolute;
+            width: 230px;
+            height: 230px;
+            border-radius: 50%;
+            border: 3px solid rgba(155, 81, 224, 0.7);
+            border-top-color: var(--primary);
+            border-bottom-color: var(--accent);
+            box-shadow: 0 0 30px var(--secondary), inset 0 0 30px var(--primary);
+            transform: rotateX(75deg);
+            animation: spinAccretion 10s linear infinite;
         }
 
-        .hero-dept-tag {
+        .accretion-disk-outer {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            border: 1px dashed rgba(0, 242, 254, 0.4);
+            transform: rotateX(75deg) rotateZ(45deg);
+            animation: spinAccretionReverse 16s linear infinite;
+        }
+
+        @keyframes singularityPulse {
+            0% { transform: scale(1); box-shadow: 0 0 30px #9b51e0, 0 0 70px #00f2fe, 0 0 120px rgba(255, 0, 127, 0.6); }
+            100% { transform: scale(1.08); box-shadow: 0 0 45px #9b51e0, 0 0 90px #00f2fe, 0 0 150px rgba(255, 0, 127, 0.8); }
+        }
+
+        @keyframes spinAccretion {
+            100% { transform: rotateX(75deg) rotateZ(360deg); }
+        }
+
+        @keyframes spinAccretionReverse {
+            100% { transform: rotateX(75deg) rotateZ(-360deg); }
+        }
+
+        .hero-dept-badge {
             font-family: var(--font-mono);
             font-size: 0.8rem;
             color: var(--primary);
             letter-spacing: 3px;
             text-transform: uppercase;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            background: rgba(0, 242, 254, 0.08);
+            border: 1px solid rgba(0, 242, 254, 0.25);
+            padding: 0.4rem 1.2rem;
+            border-radius: 20px;
+            display: inline-block;
         }
 
         .hero-name-title {
-            font-size: 3.5rem;
+            font-size: 3.6rem;
             font-weight: 800;
             line-height: 1.1;
             letter-spacing: -0.03em;
             margin-bottom: 1.25rem;
             min-height: 4.2rem;
-            background: linear-gradient(135deg, #ffffff 30%, var(--primary) 100%);
+            background: linear-gradient(135deg, #ffffff 30%, var(--primary) 70%, var(--secondary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -334,7 +357,7 @@ function generateCosmicPortfolio(userData = {}) {
         .typing-cursor {
             display: inline-block;
             width: 4px;
-            height: 3rem;
+            height: 3.2rem;
             background: var(--primary);
             margin-left: 4px;
             vertical-align: middle;
@@ -351,12 +374,13 @@ function generateCosmicPortfolio(userData = {}) {
             font-size: 1.15rem;
             line-height: 1.7;
             color: var(--text-muted);
-            margin-bottom: 2rem;
-            max-width: 650px;
+            margin: 0 auto 2rem;
+            max-width: 700px;
         }
 
         .hero-meta-bar {
             display: flex;
+            justify-content: center;
             flex-wrap: wrap;
             gap: 1.25rem;
             margin-bottom: 2.5rem;
@@ -374,25 +398,20 @@ function generateCosmicPortfolio(userData = {}) {
             gap: 0.6rem;
         }
 
-        .meta-chip-label {
-            color: var(--text-muted);
-        }
-
-        .meta-chip-val {
-            color: var(--primary);
-            font-weight: 700;
-        }
+        .meta-chip-label { color: var(--text-muted); }
+        .meta-chip-val { color: var(--primary); font-weight: 700; }
 
         .hero-ctas {
             display: flex;
-            gap: 1rem;
+            justify-content: center;
+            gap: 1.25rem;
         }
 
         .cosmic-btn {
             background: linear-gradient(135deg, var(--primary) 0%, #0099ff 100%);
             color: #02040a;
             border: none;
-            padding: 0.9rem 2rem;
+            padding: 0.95rem 2.2rem;
             border-radius: 14px;
             font-family: var(--font-sans);
             font-weight: 700;
@@ -427,31 +446,80 @@ function generateCosmicPortfolio(userData = {}) {
             box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);
         }
 
-        /* Avatar Node */
-        .avatar-glow-ring {
-            width: 200px;
-            height: 200px;
+        /* ====================================================
+           MODULE B: THE ORBITAL GRID (Skills Section)
+           ==================================================== */
+        .orbital-grid-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.75rem;
+            background: rgba(0, 242, 254, 0.08);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            padding: 0.35rem 0.9rem;
+            border-radius: 20px;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 2.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .orbital-system {
+            position: relative;
+            width: 440px;
+            height: 440px;
+            margin: 2rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 600px) {
+            .orbital-system {
+                width: 320px;
+                height: 320px;
+            }
+        }
+
+        /* Central User Image Node */
+        .orbital-center-node {
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             position: relative;
-            padding: 5px;
+            z-index: 10;
+            padding: 4px;
             background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
-            box-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
-            animation: ringGlow 6s ease-in-out infinite alternate;
+            box-shadow: 0 0 35px rgba(0, 242, 254, 0.4);
         }
 
-        @keyframes ringGlow {
-            0% { filter: drop-shadow(0 0 15px rgba(0, 242, 254, 0.4)); }
-            100% { filter: drop-shadow(0 0 25px rgba(155, 81, 224, 0.6)); }
-        }
-
-        .user-avatar-img {
+        .user-center-img {
             width: 100%;
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
         }
 
-        .user-avatar-fallback {
+        .user-center-fallback {
             width: 100%;
             height: 100%;
             border-radius: 50%;
@@ -459,17 +527,71 @@ function generateCosmicPortfolio(userData = {}) {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
+            font-size: 2.2rem;
             font-weight: 800;
             color: var(--primary);
             font-family: var(--font-mono);
         }
 
-        /* SECTION 2: SKILLS GRID */
-        .skills-grid {
+        /* Rotating Circular SVG Tracks */
+        .orbital-track-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .orbital-ring {
+            fill: none;
+            stroke-dasharray: 6 6;
+            transform-origin: center;
+        }
+
+        .ring-1 { stroke: rgba(0, 242, 254, 0.25); stroke-width: 1.5; animation: spinRing 25s linear infinite; }
+        .ring-2 { stroke: rgba(155, 81, 224, 0.25); stroke-width: 1.5; animation: spinRingReverse 35s linear infinite; }
+
+        @keyframes spinRing {
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spinRingReverse {
+            100% { transform: rotate(-360deg); }
+        }
+
+        /* Orbiting Skill Node Cards */
+        .orbiting-skill-node {
+            position: absolute;
+            background: rgba(12, 14, 33, 0.85);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+            backdrop-filter: blur(10px);
+            white-space: nowrap;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .orbiting-skill-node:hover {
+            transform: scale(1.15) !important;
+            border-color: var(--accent);
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.5);
+            color: var(--accent);
+            z-index: 20;
+        }
+
+        /* Skills Progress Grid List */
+        .skills-grid-list {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
             gap: 1.5rem;
+            width: 100%;
+            margin-top: 2.5rem;
         }
 
         .skill-card {
@@ -479,28 +601,26 @@ function generateCosmicPortfolio(userData = {}) {
             padding: 1.5rem;
             backdrop-filter: blur(12px);
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
         }
 
         .skill-card:hover {
-            transform: translateY(-5px) scale(1.02);
+            transform: translateY(-5px);
             border-color: var(--primary);
-            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.2);
         }
 
         .skill-card-icon {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
             color: var(--primary);
             font-family: var(--font-mono);
         }
 
         .skill-card-name {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
             color: #fff;
+            margin-bottom: 0.5rem;
         }
 
         .skill-progress-bar {
@@ -516,74 +636,93 @@ function generateCosmicPortfolio(userData = {}) {
             height: 100%;
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             border-radius: 4px;
-            width: 85%;
         }
 
-        /* SECTION 3: CREDENTIALS GALLERY */
-        .gallery-grid {
+        /* ====================================================
+           MODULE C: THE GLASS MATRIX (Credentials & Projects)
+           ==================================================== */
+        .glass-matrix-stage {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .matrix-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1.75rem;
         }
 
-        .cert-card {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.07);
+        .matrix-card {
+            background: rgba(20, 15, 38, 0.65);
+            border: 1px solid rgba(255, 0, 127, 0.25);
             border-radius: 20px;
-            padding: 1.75rem;
+            padding: 2rem;
             position: relative;
             overflow: hidden;
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(255, 0, 127, 0.12);
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .cert-card:hover {
-            transform: translateY(-6px);
-            border-color: var(--secondary);
-            box-shadow: 0 12px 35px rgba(155, 81, 224, 0.2);
+        .matrix-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--accent);
+            box-shadow: 0 15px 40px rgba(255, 0, 127, 0.35);
         }
 
-        .cert-badge-tag {
+        .matrix-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--secondary), transparent);
+        }
+
+        .matrix-badge-tag {
             display: inline-block;
             font-family: var(--font-mono);
             font-size: 0.7rem;
-            color: var(--secondary);
-            background: rgba(155, 81, 224, 0.1);
-            border: 1px solid rgba(155, 81, 224, 0.3);
-            padding: 0.25rem 0.6rem;
+            color: var(--accent);
+            background: rgba(255, 0, 127, 0.12);
+            border: 1px solid rgba(255, 0, 127, 0.35);
+            padding: 0.25rem 0.65rem;
             border-radius: 8px;
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .cert-title {
-            font-size: 1.15rem;
+        .matrix-card-title {
+            font-size: 1.2rem;
             font-weight: 700;
             color: #fff;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.6rem;
             line-height: 1.4;
         }
 
-        .cert-issuer {
+        .matrix-card-sub {
             font-size: 0.85rem;
             color: var(--text-muted);
             font-family: var(--font-mono);
+            line-height: 1.6;
         }
 
-        /* SECTION 4: ABOUT & CONTACT */
-        .about-terminal {
-            background: #030712;
+        /* Terminal Logs Section */
+        .terminal-box {
+            background: #030612;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 1.5rem;
+            border-radius: 18px;
+            padding: 1.75rem;
             font-family: var(--font-mono);
             font-size: 0.9rem;
             color: #cbd5e1;
             line-height: 1.8;
-            margin-top: 1.5rem;
+            margin-top: 2rem;
         }
 
-        .terminal-header {
+        .terminal-bar {
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -592,21 +731,10 @@ function generateCosmicPortfolio(userData = {}) {
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .term-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-
+        .term-dot { width: 10px; height: 10px; border-radius: 50%; }
         .dot-red { background: #ef4444; }
         .dot-yellow { background: #f59e0b; }
         .dot-green { background: #10b981; }
-
-        .term-title {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-left: auto;
-        }
 
         /* Footer */
         .footer {
@@ -619,20 +747,18 @@ function generateCosmicPortfolio(userData = {}) {
             margin-top: 4rem;
         }
 
-        .footer span {
-            color: var(--primary);
-        }
+        .footer span { color: var(--primary); }
     </style>
 </head>
 <body>
 
-    <!-- 3D Starfield Canvas -->
-    <canvas id="space-canvas"></canvas>
+    <!-- WebGL Three.js Particle Background -->
+    <div id="webgl-canvas"></div>
 
-    <!-- Movie-Quality Lighting & Aurora Nebulae -->
-    <div class="aurora-sphere aurora-1"></div>
-    <div class="aurora-sphere aurora-2"></div>
-    <div class="aurora-sphere aurora-3"></div>
+    <!-- Deep Purple Movie-Quality Ambient Aurora Lighting -->
+    <div class="ambient-aurora aurora-purple"></div>
+    <div class="ambient-aurora aurora-cyan"></div>
+    <div class="ambient-aurora aurora-pink"></div>
 
     <!-- Navigation Header -->
     <nav class="cosmic-nav">
@@ -641,79 +767,104 @@ function generateCosmicPortfolio(userData = {}) {
             <span>ONYX // ${(name || 'USER').split(' ')[0]}</span>
         </div>
         <ul class="nav-links">
-            <li><a href="#hero">Hero</a></li>
-            <li><a href="#skills">Skills</a></li>
-            <li><a href="#gallery">Credentials</a></li>
-            <li><a href="#about">About</a></li>
+            <li><a href="#blackhole">Singularity</a></li>
+            <li><a href="#orbital">Orbital Grid</a></li>
+            <li><a href="#glassmatrix">Glass Matrix</a></li>
+            <li><a href="#terminal">Terminal</a></li>
         </ul>
     </nav>
 
-    <!-- Main Content Stage -->
-    <div class="main-wrapper">
+    <!-- Main Container Stage -->
+    <div class="main-stage">
 
-        <!-- SECTION 1: HERO SECTION -->
-        <section id="hero">
-            <div class="glass-panel">
-                <div class="hero-grid">
-                    <div class="hero-info-col">
-                        <div class="hero-dept-tag hero-stagger">
-                            <span>//</span> ${department} DEPARTMENT
-                        </div>
-                        <h1 class="hero-name-title hero-stagger">
-                            <span id="typing-hero-title"></span><span class="typing-cursor"></span>
-                        </h1>
-                        <p class="hero-bio hero-stagger">
-                            ${bio}
-                        </p>
+        <!-- ====================================================
+             MODULE A: THE BLACK HOLE (Hero Section)
+             ==================================================== -->
+        <section id="blackhole">
+            <div class="glass-panel blackhole-hero-stage">
+                <div class="blackhole-viewport hero-stagger">
+                    <div class="singularity-core"></div>
+                    <div class="accretion-disk"></div>
+                    <div class="accretion-disk-outer"></div>
+                </div>
 
-                        <div class="hero-meta-bar hero-stagger">
-                            <div class="meta-chip">
-                                <span class="meta-chip-label">ROLL NO:</span>
-                                <span class="meta-chip-val">${rollNumber}</span>
-                            </div>
-                            <div class="meta-chip">
-                                <span class="meta-chip-label">DEPT:</span>
-                                <span class="meta-chip-val">${department}</span>
-                            </div>
-                            <div class="meta-chip">
-                                <span class="meta-chip-label">STATUS:</span>
-                                <span class="meta-chip-val" style="color: #10b981;">VERIFIED PROTOCOL</span>
-                            </div>
-                        </div>
+                <div class="hero-dept-badge hero-stagger">
+                    <span>//</span> ${department} DEPARTMENT
+                </div>
 
-                        <div class="hero-ctas hero-stagger">
-                            <a href="#skills" class="cosmic-btn">
-                                <span>Explore Core Matrix</span>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                            </a>
-                            <a href="#gallery" class="cosmic-btn cosmic-btn-outline">
-                                <span>View Credentials</span>
-                            </a>
-                        </div>
+                <h1 class="hero-name-title hero-stagger">
+                    <span id="typing-hero-title"></span><span class="typing-cursor"></span>
+                </h1>
+
+                <p class="hero-bio hero-stagger">
+                    ${bio}
+                </p>
+
+                <div class="hero-meta-bar hero-stagger">
+                    <div class="meta-chip">
+                        <span class="meta-chip-label">ROLL NO:</span>
+                        <span class="meta-chip-val">${rollNumber}</span>
                     </div>
-
-                    <div class="hero-avatar-col hero-stagger">
-                        ${avatarMarkup}
+                    <div class="meta-chip">
+                        <span class="meta-chip-label">DEPARTMENT:</span>
+                        <span class="meta-chip-val">${department}</span>
                     </div>
+                    <div class="meta-chip">
+                        <span class="meta-chip-label">SYSTEM PROTOCOL:</span>
+                        <span class="meta-chip-val" style="color: #10b981;">200 OK ACTIVE</span>
+                    </div>
+                </div>
+
+                <div class="hero-ctas hero-stagger">
+                    <a href="#orbital" class="cosmic-btn">
+                        <span>Explore Orbital Matrix</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
+                    <a href="#glassmatrix" class="cosmic-btn cosmic-btn-outline">
+                        <span>Glass Credentials</span>
+                    </a>
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 2: SKILLS GRID SECTION -->
-        <section id="skills">
-            <div class="glass-panel">
-                <div class="section-header">
-                    <div class="section-badge">// TECHNICAL MATRIX</div>
-                    <h2 class="section-title">Core Competencies & Skills</h2>
+        <!-- ====================================================
+             MODULE B: THE ORBITAL GRID (Skills Section)
+             ==================================================== -->
+        <section id="orbital">
+            <div class="glass-panel orbital-grid-stage">
+                <div class="section-badge">// ORBITAL GRID</div>
+                <h2 class="section-title">Core Competencies & Tech Stack</h2>
+
+                <!-- Circular SVG Orbital Tracks -->
+                <div class="orbital-system">
+                    <svg class="orbital-track-svg" viewBox="0 0 440 440">
+                        <circle class="orbital-ring ring-1" cx="220" cy="220" r="140"/>
+                        <circle class="orbital-ring ring-2" cx="220" cy="220" r="200"/>
+                    </svg>
+
+                    <!-- Central User Avatar Node -->
+                    <div class="orbital-center-node">
+                        ${avatarMarkup}
+                    </div>
+
+                    <!-- Orbiting Skill Nodes (Placed along circular radius) -->
+                    ${skillList.slice(0, 8).map((skill, idx) => {
+                        const radius = idx % 2 === 0 ? 140 : 200;
+                        const angle = (idx * (360 / Math.min(8, skillList.length))) * (Math.PI / 180);
+                        const leftPos = 220 + radius * Math.cos(angle) - 45;
+                        const topPos = 220 + radius * Math.sin(angle) - 18;
+                        return `<div class="orbiting-skill-node" style="left: ${leftPos}px; top: ${topPos}px;">${skill}</div>`;
+                    }).join('')}
                 </div>
 
-                <div class="skills-grid">
+                <!-- Skills Grid Progress Meters -->
+                <div class="skills-grid-list">
                     ${skillList.map((skill, idx) => `
                         <div class="skill-card">
                             <div class="skill-card-icon">&lt;0${idx + 1}&gt;</div>
                             <div class="skill-card-name">${skill}</div>
                             <div class="skill-progress-bar">
-                                <div class="skill-progress-fill" style="width: ${Math.min(95, 75 + (idx * 5) % 25)}%;"></div>
+                                <div class="skill-progress-fill" style="width: ${Math.min(95, 70 + (idx * 6) % 28)}%;"></div>
                             </div>
                         </div>
                     `).join('')}
@@ -721,66 +872,62 @@ function generateCosmicPortfolio(userData = {}) {
             </div>
         </section>
 
-        <!-- SECTION 3: CREDENTIALS GALLERY SECTION -->
-        <section id="gallery">
-            <div class="glass-panel">
-                <div class="section-header">
-                    <div class="section-badge">// CREDENTIALS GALLERY</div>
-                    <h2 class="section-title">Certifications & Achievements</h2>
-                </div>
+        <!-- ====================================================
+             MODULE C: THE GLASS MATRIX (Credentials Section)
+             ==================================================== -->
+        <section id="glassmatrix">
+            <div class="glass-panel glass-matrix-stage">
+                <div class="section-badge" style="color: var(--accent); border-color: rgba(255,0,127,0.3); background: rgba(255,0,127,0.08);">// GLASS MATRIX</div>
+                <h2 class="section-title">Credentials & Certifications</h2>
 
-                <div class="gallery-grid">
+                <div class="matrix-grid">
                     ${certList.map((cert, idx) => `
-                        <div class="cert-card">
-                            <span class="cert-badge-tag">VERIFIED CREDENTIAL #${idx + 1}</span>
-                            <h3 class="cert-title">${cert}</h3>
-                            <p class="cert-issuer">Issued by Academic & Industry Certification Authority</p>
+                        <div class="matrix-card">
+                            <span class="matrix-badge-tag">VERIFIED MATRIX #${idx + 1}</span>
+                            <h3 class="matrix-card-title">${cert}</h3>
+                            <p class="matrix-card-sub">Issued by Verified Industry & Academic Protocol Authority</p>
                         </div>
                     `).join('')}
                 </div>
             </div>
         </section>
 
-        <!-- SECTION 4: ABOUT & CONTACT SECTION -->
-        <section id="about">
-            <div class="glass-panel about-glass-panel">
-                <div class="section-header">
-                    <div class="section-badge">// STUDENT PROFILE</div>
-                    <h2 class="section-title">Terminal & Background</h2>
-                </div>
+        <!-- ====================================================
+             SYSTEM TERMINAL LOGS
+             ==================================================== -->
+        <section id="terminal">
+            <div class="glass-panel">
+                <div class="section-badge">// SYSTEM DIAGNOSTICS</div>
+                <h2 class="section-title">Profile Terminal Verification</h2>
 
-                <p style="color: var(--text-muted); line-height: 1.7; font-size: 1.05rem;">
-                    Full profile verification for <strong>${name}</strong> (${department}). Compiled using Onyx High-Tech Cosmic Generator Engine.
-                </p>
-
-                <div class="about-terminal">
-                    <div class="terminal-header">
+                <div class="terminal-box">
+                    <div class="terminal-bar">
                         <div class="term-dot dot-red"></div>
                         <div class="term-dot dot-yellow"></div>
                         <div class="term-dot dot-green"></div>
-                        <span class="term-title">onyx-os --profile-dump</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: auto;">onyx-os --verify-user</span>
                     </div>
-                    <div>&gt; ONYX_USER: "${name}"</div>
+                    <div>&gt; USER_NAME: "${name}"</div>
                     <div>&gt; DEPARTMENT: "${department}"</div>
                     <div>&gt; ROLL_NUMBER: "${rollNumber}"</div>
-                    <div>&gt; ACTIVE_SKILLS: [${skillList.map(s => `"${s}"`).join(', ')}]</div>
-                    <div>&gt; CERTIFICATES: [${certList.map(c => `"${c}"`).join(', ')}]</div>
-                    <div style="color: #10b981;">&gt; SYSTEM_STATUS: 200 OK (PORTFOLIO READY FOR DEPLOYMENT)</div>
+                    <div>&gt; ORBITAL_NODES: [${skillList.map(s => `"${s}"`).join(', ')}]</div>
+                    <div>&gt; GLASS_MATRIX: [${certList.map(c => `"${c}"`).join(', ')}]</div>
+                    <div style="color: #10b981;">&gt; MODULAR_ENGINE_STATUS: 200 OK (READY FOR GITHUB DEPLOYMENT)</div>
                 </div>
             </div>
         </section>
 
-        <!-- FOOTER -->
+        <!-- Footer -->
         <footer class="footer">
-            <p>COMPILED WITH <span>ONYX HIGH-TECH PORTFOLIO ENGINE</span> • ${name} • ${new Date().getFullYear()}</p>
+            <p>COMPILED WITH <span>ONYX MODULAR ENGINE</span> • ${name} • ${new Date().getFullYear()}</p>
         </footer>
 
     </div>
 
-    <!-- GSAP Initialization Script -->
+    <!-- GSAP & Three.js Initialization Script -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Register GSAP ScrollTrigger
+            // 1. GSAP ScrollTrigger Registration & Animations
             if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
                 gsap.registerPlugin(ScrollTrigger);
 
@@ -800,7 +947,7 @@ function generateCosmicPortfolio(userData = {}) {
                     setTimeout(typeChar, 250);
                 }
 
-                // Staggered Entrance Animation for Hero
+                // Staggered Entrance Animation for Black Hole Hero
                 gsap.from(".hero-stagger", {
                     opacity: 0,
                     y: 35,
@@ -809,24 +956,24 @@ function generateCosmicPortfolio(userData = {}) {
                     ease: "power3.out"
                 });
 
-                // ScrollTrigger Animations for Skills Grid
+                // ScrollTrigger Animations for Orbital Grid
                 gsap.from(".skill-card", {
                     scrollTrigger: {
-                        trigger: "#skills",
+                        trigger: "#orbital",
                         start: "top 80%",
                     },
                     opacity: 0,
                     y: 45,
                     scale: 0.92,
                     duration: 0.8,
-                    stagger: 0.1,
+                    stagger: 0.08,
                     ease: "back.out(1.4)"
                 });
 
-                // ScrollTrigger Animations for Credentials Gallery
-                gsap.from(".cert-card", {
+                // ScrollTrigger Animations for Glass Matrix Cards
+                gsap.from(".matrix-card", {
                     scrollTrigger: {
-                        trigger: "#gallery",
+                        trigger: "#glassmatrix",
                         start: "top 80%",
                     },
                     opacity: 0,
@@ -835,55 +982,68 @@ function generateCosmicPortfolio(userData = {}) {
                     stagger: 0.12,
                     ease: "power2.out"
                 });
-
-                // ScrollTrigger Animation for About Terminal
-                gsap.from(".about-glass-panel", {
-                    scrollTrigger: {
-                        trigger: "#about",
-                        start: "top 85%",
-                    },
-                    opacity: 0,
-                    y: 40,
-                    duration: 0.9,
-                    ease: "power3.out"
-                });
             }
 
-            // Starfield Particle Loop
-            const canvas = document.getElementById("space-canvas");
-            if (canvas) {
-                const ctx = canvas.getContext("2d");
-                let stars = [];
-                function resizeCanvas() {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
-                }
-                resizeCanvas();
-                window.addEventListener("resize", resizeCanvas);
+            // 2. Three.js Background Particle Renderer
+            if (typeof THREE !== "undefined") {
+                const container = document.getElementById("webgl-canvas");
+                if (container) {
+                    const scene = new THREE.Scene();
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    camera.position.z = 400;
 
-                for (let i = 0; i < 160; i++) {
-                    stars.push({
-                        x: Math.random() * canvas.width,
-                        y: Math.random() * canvas.height,
-                        radius: Math.random() * 1.5 + 0.3,
-                        alpha: Math.random() * 0.8 + 0.2,
-                        speed: Math.random() * 0.05 + 0.01
+                    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                    container.appendChild(renderer.domElement);
+
+                    // Particle Geometry
+                    const particleCount = 700;
+                    const geometry = new THREE.BufferGeometry();
+                    const positions = new Float32Array(particleCount * 3);
+                    const colors = new Float32Array(particleCount * 3);
+
+                    const colorCyan = new THREE.Color('#00f2fe');
+                    const colorPurple = new THREE.Color('#9b51e0');
+
+                    for (let i = 0; i < particleCount * 3; i += 3) {
+                        positions[i] = (Math.random() - 0.5) * 1000;
+                        positions[i + 1] = (Math.random() - 0.5) * 1000;
+                        positions[i + 2] = (Math.random() - 0.5) * 1000;
+
+                        const mixedColor = colorCyan.clone().lerp(colorPurple, Math.random());
+                        colors[i] = mixedColor.r;
+                        colors[i + 1] = mixedColor.g;
+                        colors[i + 2] = mixedColor.b;
+                    }
+
+                    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                    const material = new THREE.PointsMaterial({
+                        size: 2.5,
+                        vertexColors: true,
+                        transparent: true,
+                        opacity: 0.75
+                    });
+
+                    const particles = new THREE.Points(geometry, material);
+                    scene.add(particles);
+
+                    function animateWebGL() {
+                        particles.rotation.y += 0.0006;
+                        particles.rotation.x += 0.0003;
+                        renderer.render(scene, camera);
+                        requestAnimationFrame(animateWebGL);
+                    }
+                    animateWebGL();
+
+                    window.addEventListener('resize', () => {
+                        camera.aspect = window.innerWidth / window.innerHeight;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(window.innerWidth, window.innerHeight);
                     });
                 }
-
-                function drawStars() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    stars.forEach(s => {
-                        s.y -= s.speed;
-                        if (s.y < 0) s.y = canvas.height;
-                        ctx.beginPath();
-                        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-                        ctx.fillStyle = \`rgba(255, 255, 255, \${s.alpha})\`;
-                        ctx.fill();
-                    });
-                    requestAnimationFrame(drawStars);
-                }
-                drawStars();
             }
         });
     </script>
